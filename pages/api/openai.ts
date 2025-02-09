@@ -13,11 +13,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { userMessage } = req.body;
 
       // Envoi la requête à OpenAI pour obtenir une réponse en utilisant GPT-4
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4',  // Utilise GPT-4
-        messages: [{ role: 'user', content: userMessage }],
-        max_tokens: 100,
-      });
+const response = await openai.completions.create({
+  model: "gpt-4",
+  prompt: userMessage,  // Utilise prompt à la place de messages
+  max_tokens: 100,
+});
 
       // Envoie la réponse à l'utilisateur
       res.status(200).json({ message: response.choices[0].message.content });
