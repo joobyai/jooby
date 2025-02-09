@@ -1,7 +1,4 @@
 ﻿import React, { useState, useEffect } from "react";
-import OpenAI from "openai";
-
-const openai = new OpenAI({ apiKey: process.env.NEXT || "" });
 
 const translations = {
   en: {
@@ -16,7 +13,7 @@ const translations = {
       "By using Jooby, you agree that your data may be used to connect you with companies looking for freelancers. Your responses may be shared via email and SMS with potential recruiters.",
   },
   fr: {
-    title: "L'IA qui te trouve un job en 1H",
+    title: "L&apos;IA qui te trouve un job en 1H",
     welcome: "Bienvenue sur Jooby !",
     question: "Souhaites-tu que je te trouve un emploi en ligne ou près de chez toi ?",
     onlineJob: "Trouver un job en ligne",
@@ -54,14 +51,18 @@ const Jooby = () => {
     setUserInput("");
     setTyping(true);
 
-    const response = await openai.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: userInput }],
-      max_tokens: 100,
+    // Appel à l'API route que nous avons créée précédemment
+    const response = await fetch('/api/openai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userMessage: userInput }),
     });
 
+    const data = await response.json();
     setTyping(false);
-    setChatMessages([...newMessages, `Jooby: ${response.choices[0].message.content}`]);
+    setChatMessages([...newMessages, `Jooby: ${data.message}`]);
   };
 
   if (loading) {
@@ -78,8 +79,10 @@ const Jooby = () => {
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center bg-gray-900 text-white">
       <div className="absolute top-4 right-4 flex items-center space-x-2">
-        <button onClick={() => setLanguage(language === "fr" ? "en" : "fr")}
-          className="flex items-center space-x-2 p-2 bg-gray-700 rounded-md text-white hover:bg-gray-600">
+        <button
+          onClick={() => setLanguage(language === "fr" ? "en" : "fr")}
+          className="flex items-center space-x-2 p-2 bg-gray-700 rounded-md text-white hover:bg-gray-600"
+        >
           <span>{language === "fr" ? "🇬🇧" : "🇫🇷"}</span>
           <span>{language === "fr" ? "English" : "Français"}</span>
         </button>
@@ -90,12 +93,20 @@ const Jooby = () => {
       <div className="w-full max-w-md rounded-lg bg-gray-800 p-6 shadow-xl text-center">
         {!chatStarted ? (
           <>
-            <p className="mb-3 text-gray-300" style={{ fontSize: "17px", lineHeight: "25px" }}>{t.question}</p>
+            <p className="mb-3 text-gray-300" style={{ fontSize: "17px", lineHeight: "25px" }}>
+              {t.question}
+            </p>
             <div className="space-y-4">
-              <button onClick={startChat} className="w-full rounded-md bg-green-600 py-3 font-semibold text-white hover:bg-green-500 text-lg">
+              <button
+                onClick={startChat}
+                className="w-full rounded-md bg-green-600 py-3 font-semibold text-white hover:bg-green-500 text-lg"
+              >
                 {t.onlineJob}
               </button>
-              <button onClick={startChat} className="w-full rounded-md bg-[#1e4f8f] py-2 font-semibold text-white hover:bg-[#17437a]">
+              <button
+                onClick={startChat}
+                className="w-full rounded-md bg-[#1e4f8f] py-2 font-semibold text-white hover:bg-[#17437a]"
+              >
                 {t.localJob}
               </button>
             </div>
@@ -103,9 +114,11 @@ const Jooby = () => {
         ) : (
           <div className="h-64 overflow-y-auto bg-gray-700 p-4 rounded-md text-left">
             {chatMessages.map((msg, index) => (
-              <p key={index} className="text-white mb-2">{msg}</p>
+              <p key={index} className="text-white mb-2">
+                {msg}
+              </p>
             ))}
-            {typing && <p className="text-gray-400">Jooby est en train d'écrire...</p>}
+            {typing && <p className="text-gray-400">Jooby est en train d&apos;écrire...</p>}
           </div>
         )}
       </div>
@@ -118,7 +131,12 @@ const Jooby = () => {
             className="flex-1 p-2 rounded-md bg-gray-700 text-white border border-gray-600"
             placeholder={t.placeholder}
           />
-          <button onClick={handleSendMessage} className="bg-green-600 p-2 rounded-md text-white hover:bg-green-500">{t.send}</button>
+          <button
+            onClick={handleSendMessage}
+            className="bg-green-600 p-2 rounded-md text-white hover:bg-green-500"
+          >
+            {t.send}
+          </button>
         </div>
       )}
       <p className="mt-4 text-xs text-gray-400 max-w-md text-center">
