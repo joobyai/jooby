@@ -20,7 +20,7 @@ const response = await openai.completions.create({
 });
 
       // Envoie la réponse à l'utilisateur
-      res.status(200).json({ message: response.choices[0].message.content });
+    res.status(200).json({ message: response.choices[0].text });
     } catch (error) {
       console.error('Erreur OpenAI:', error);
       res.status(500).json({ error: 'Échec de la communication avec OpenAI' });
