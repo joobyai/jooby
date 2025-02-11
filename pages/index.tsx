@@ -26,7 +26,7 @@ const translations = {
 };
 
 const Jooby = () => {
- const [language, setLanguage] = useState<"en" | "fr">("fr");
+ const [language, setLanguage] = useState<keyof typeof translations>("fr");
   const [chatStarted, setChatStarted] = useState(false);
  const [chatMessages, setChatMessages] = useState<string[]>([]);
   const [userInput, setUserInput] = useState("");
