@@ -1,10 +1,37 @@
-﻿import React, { useState, useEffect } from "react";
+/* eslint-disable react/no-unescaped-entities */
 
-const translations = {
+import React, { useState, useEffect } from "react";
+
+// Définir les types pour les traductions
+interface Translations {
+  en: {
+    title: string;
+    welcome: string;
+    question: string;
+    onlineJob: string;
+    localJob: string;
+    placeholder: string;
+    send: string;
+    disclaimer: string;
+  };
+  fr: {
+    title: string;
+    welcome: string;
+    question: string;
+    onlineJob: string;
+    localJob: string;
+    placeholder: string;
+    send: string;
+    disclaimer: string;
+  };
+}
+
+const translations: Translations = {
   en: {
     title: "The AI that finds you a job in 1 hour",
     welcome: "Welcome to Jooby!",
-    question: "Would you like me to find you an online job or one near your location?",
+    question:
+      "Would you like me to find you an online job or one near your location?",
     onlineJob: "Find an online job",
     localJob: "Find a job near me",
     placeholder: "Enter your message...",
@@ -13,9 +40,10 @@ const translations = {
       "By using Jooby, you agree that your data may be used to connect you with companies looking for freelancers. Your responses may be shared via email and SMS with potential recruiters.",
   },
   fr: {
-    title: "L&apos;IA qui te trouve un job en 1H",
+    title: "L'IA qui te trouve un job en 1H", // Pas d'échappement HTML pour l'apostrophe
     welcome: "Bienvenue sur Jooby !",
-    question: "Souhaites-tu que je te trouve un emploi en ligne ou près de chez toi ?",
+    question:
+      "Souhaites-tu que je te trouve un emploi en ligne ou près de chez toi ?",
     onlineJob: "Trouver un job en ligne",
     localJob: "Trouver un job près de chez moi",
     placeholder: "Entrez votre message...",
@@ -26,21 +54,29 @@ const translations = {
 };
 
 const Jooby = () => {
- const [language, setLanguage] = useState<keyof typeof translations>("fr");
-  const [chatStarted, setChatStarted] = useState(false);
- const [chatMessages, setChatMessages] = useState<string[]>([]);
+  const [language, setLanguage] = useState<keyof typeof translations>("fr");
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<string[]>([]);
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(false);
-  const t = translations[language];
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 2000);
   }, []);
 
-  const startChat = () => {
-    setChatStarted(true);
-    setChatMessages(["Bonjour! Je suis Jooby. Quel est ton prénom? 😊"]);
+  const t = translations[language];
+
+  const handleLanguageChange = (lang: "fr" | "en") => {
+    setLanguage(lang);
+  };
+
+  const startChat = (jobType: "online" | "local") => {
+    setChatOpen(true);
+    setChatMessages([
+      `${t.welcome}\n${t.question}`,
+      `Tu as choisi: ${jobType === "online" ? t.onlineJob : t.localJob}`,
+    ]);
   };
 
   const handleSendMessage = async () => {
@@ -51,97 +87,127 @@ const Jooby = () => {
     setUserInput("");
     setTyping(true);
 
-    // Appel à l'API route que nous avons créée précédemment
-    const response = await fetch('/api/openai', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userMessage: userInput }),
-    });
+    try {
+      const response = await fetch("/api/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userMessage: userInput }),
+      });
 
-    const data = await response.json();
-    setTyping(false);
-    setChatMessages([...newMessages, `Jooby: ${data.message}`]);
+      const data = await response.json();
+
+      setTyping(false);
+      setChatMessages([
+        ...newMessages,
+        `Jooby: ${data.message || "Désolé, je n'ai pas compris."}`,
+      ]);
+    } catch (error: unknown) {
+      console.error("Erreur OpenAI:", error);
+
+      setTyping(false);
+
+      // Vérification si `error` est une instance d'Error
+      const errorMessage =
+        error instanceof Error ? error.message : "Erreur inconnue";
+      setChatMessages([...newMessages, `❌ Erreur serveur: ${errorMessage}`]);
+    }
   };
 
   if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-900 text-white">
-        <div className="text-center">
-          <div className="text-5xl font-bold">∞</div>
-          <p className="mt-2">Jooby se charge...</p>
-        </div>
+        <div className="animate-spin text-5xl font-bold">∞</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-gray-900 text-white">
-      <div className="absolute top-4 right-4 flex items-center space-x-2">
+    <div className="flex h-screen w-screen flex-col bg-gray-900 text-white p-4 relative">
+      <div className="absolute top-4 right-4 flex space-x-2">
         <button
-          onClick={() => setLanguage(language === "fr" ? "en" : "fr")}
-          className="flex items-center space-x-2 p-2 bg-gray-700 rounded-md text-white hover:bg-gray-600"
+          onClick={() => handleLanguageChange("fr")}
+          className={`px-4 py-2 rounded-md text-sm font-semibold ${
+            language === "fr" ? "bg-green-600" : "bg-gray-700"
+          }`}
         >
-          <span>{language === "fr" ? "🇬🇧" : "🇫🇷"}</span>
-          <span>{language === "fr" ? "English" : "Français"}</span>
+          FR
+        </button>
+        <button
+          onClick={() => handleLanguageChange("en")}
+          className={`px-4 py-2 rounded-md text-sm font-semibold ${
+            language === "en" ? "bg-green-600" : "bg-gray-700"
+          }`}
+        >
+          EN
         </button>
       </div>
-      <div className="text-5xl font-bold">∞</div>
-      <h1 className="mb-2 text-2xl font-bold text-white">Jooby</h1>
-      <h2 className="mb-4 text-xl font-semibold text-white">{t.welcome}</h2>
-      <div className="w-full max-w-md rounded-lg bg-gray-800 p-6 shadow-xl text-center">
-        {!chatStarted ? (
-          <>
-            <p className="mb-3 text-gray-300" style={{ fontSize: "17px", lineHeight: "25px" }}>
-              {t.question}
-            </p>
-            <div className="space-y-4">
-              <button
-                onClick={startChat}
-                className="w-full rounded-md bg-green-600 py-3 font-semibold text-white hover:bg-green-500 text-lg"
-              >
-                {t.onlineJob}
-              </button>
-              <button
-                onClick={startChat}
-                className="w-full rounded-md bg-[#1e4f8f] py-2 font-semibold text-white hover:bg-[#17437a]"
-              >
-                {t.localJob}
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="h-64 overflow-y-auto bg-gray-700 p-4 rounded-md text-left">
-            {chatMessages.map((msg, index) => (
-              <p key={index} className="text-white mb-2">
-                {msg}
-              </p>
-            ))}
-            {typing && <p className="text-gray-400">Jooby est en train d&apos;écrire...</p>}
-          </div>
-        )}
+      <div className="text-center pt-10">
+        <div className="text-5xl font-bold">∞</div>
+        <h1 className="text-2xl font-bold">Jooby</h1>
       </div>
-      {chatStarted && (
-        <div className="mt-4 flex w-full max-w-md space-x-2">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            className="flex-1 p-2 rounded-md bg-gray-700 text-white border border-gray-600"
-            placeholder={t.placeholder}
-          />
+      <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto mt-[5rem]">
+        <div className="text-3xl font-semibold">{t.title}</div>
+        <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-xl mt-6">
+          <p className="text-gray-300">{t.question}</p>
           <button
-            onClick={handleSendMessage}
-            className="bg-green-600 p-2 rounded-md text-white hover:bg-green-500"
+            onClick={() => startChat("online")}
+            className="w-full rounded-md bg-green-600 py-3 text-lg font-semibold text-white hover:bg-green-500 mt-4"
           >
-            {t.send}
+            {t.onlineJob}
+          </button>
+          <button
+            onClick={() => startChat("local")}
+            className="w-full rounded-md bg-[#1e4f8f] py-2 text-sm font-light text-white hover:bg-[#17437a] mt-2"
+          >
+            {t.localJob}
           </button>
         </div>
+        <p className="text-xs text-gray-400 mt-6">{t.disclaimer}</p>
+      </div>
+      <div className="absolute bottom-0 w-full text-center text-xs text-gray-400 py-4">
+        <p>
+          Powered by OpenAI GPT-4 – Respect de votre vie privée et sécurité des
+          données.
+        </p>
+      </div>
+      {chatOpen && (
+        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-80 z-50">
+          <div className="relative w-full max-w-4xl bg-gray-700 p-6 rounded-lg shadow-xl">
+            <button
+              onClick={() => setChatOpen(false)}
+              className="absolute top-2 right-2 text-white text-3xl"
+            >
+              &times;
+            </button>
+            <div className="overflow-y-auto max-h-96 w-full space-y-4 mb-4 p-4 bg-gray-800 rounded-md">
+              {chatMessages.map((msg, index) => (
+                <p key={index} className="text-white">
+                  {msg}
+                </p>
+              ))}
+              {typing && (
+                <p className="text-gray-400">Jooby est en train d'écrire...</p>
+              )}
+            </div>
+            <div className="flex w-full space-x-2">
+              <input
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                className="flex-1 p-2 rounded-md bg-gray-600 text-white border border-gray-500"
+                placeholder={t.placeholder}
+              />
+              <button
+                onClick={handleSendMessage}
+                className="bg-green-600 p-2 rounded-md text-white hover:bg-green-500"
+              >
+                {t.send}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-      <p className="mt-4 text-xs text-gray-400 max-w-md text-center">
-        {t.disclaimer}
-      </p>
     </div>
   );
 };
