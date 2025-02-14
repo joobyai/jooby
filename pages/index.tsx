@@ -14,7 +14,6 @@ const Jooby = () => {
   const [country, setCountry] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
 
-  // Carregar dados do localStorage ao montar o componente
   useEffect(() => {
     const savedData = JSON.parse(localStorage.getItem("joobyChatData") || "{}");
     if (savedData) {
@@ -27,7 +26,7 @@ const Jooby = () => {
     setTimeout(() => setLoading(false), 2000);
   }, []);
 
-  // Salvar dados no localStorage sempre que houver mudanças nos estados relevantes
+  /*
   useEffect(() => {
     const dataToSave = {
       jobType,
@@ -38,7 +37,7 @@ const Jooby = () => {
     };
     localStorage.setItem("joobyChatData", JSON.stringify(dataToSave));
   }, [jobType, budget, country, email, chatMessages]);
-
+  */
   const t = translations[language];
 
   const handleLanguageChange = (lang: "fr" | "en") => {
@@ -50,7 +49,7 @@ const Jooby = () => {
     setChatOpen(true);
     setChatMessages([
       `${t.welcome}\n${t.question}`,
-      `Vous avez choisi: ${
+      `${t.userChoice} ${
         selectedJobType === "online" ? t.onlineJob : t.localJob
       }`,
       t.budgetQuestion,
@@ -60,15 +59,13 @@ const Jooby = () => {
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    console.log(userInput);
-
-    const newMessages = [...chatMessages, `Vous: ${userInput}`];
+    const newMessages = [...chatMessages, `${t.userIdentifier}: ${userInput}`];
     setChatMessages(newMessages);
     setUserInput("");
     setTyping(true);
 
     if (!budget) {
-
+      // Validar se o orçamento é um número
       const parsedBudget = parseFloat(userInput);
       if (isNaN(parsedBudget)) {
         setChatMessages([...newMessages, "❌ Veuillez entrer un budget valide."]);
@@ -106,7 +103,7 @@ const Jooby = () => {
       setTyping(false);
       setChatMessages([
         ...newMessages,
-        "Merci pour vos informations! Nous vous enverrons des offres d'emploi directement à votre e-mail.",
+        t.successMessage,
       ]);
       return;
     }
@@ -134,16 +131,16 @@ const Jooby = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-gray-900 text-white">
+      <div className="flex items-center justify-center w-screen h-screen bg-gray-900 text-white">
         <div className="animate-spin text-5xl font-bold">∞</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-gray-900 text-white p-4 relative">
+    <div className="flex flex-col w-screen h-screen bg-gray-900 text-white p-4 relative overflow-hidden">
       {/* Language Selector */}
-      <div className="absolute top-4 right-4 flex space-x-2">
+      <div className="absolute top-4 right-4 flex space-x-2 z-50">
         <button
           onClick={() => handleLanguageChange("fr")}
           className={`px-4 py-2 rounded-md text-sm font-semibold ${
@@ -163,12 +160,10 @@ const Jooby = () => {
       </div>
 
       {/* Main Content */}
-      <div className="text-center pt-10">
+      <div className="flex flex-col items-center justify-center flex-grow">
         <div className="text-5xl font-bold">∞</div>
         <h1 className="text-2xl font-bold">Jooby</h1>
-      </div>
-      <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto mt-[5rem]">
-        <div className="text-3xl font-semibold">{t.title}</div>
+        <div className="text-3xl font-semibold mt-4">{t.title}</div>
         <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-xl mt-6">
           <p className="text-gray-300">{t.question}</p>
           <button
@@ -188,9 +183,10 @@ const Jooby = () => {
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-0 w-full text-center text-xs text-gray-400 py-4">
+      <div className="text-center text-xs text-gray-400 py-4">
         <p>
-          {t.footerDisclaimer}
+          Powered by OpenAI GPT-4 – Respect de votre vie privée et sécurité des
+          données.
         </p>
       </div>
 

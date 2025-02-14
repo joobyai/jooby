@@ -2,6 +2,8 @@ import { Translations } from "../types";
 
 export const translations: Translations = {
   en: {
+    userIdentifier: "You",
+    userChoice: "You have chosen: ",
     title: "The AI that finds you a job in 1 hour",
     welcome: "Welcome to Jooby!",
     question:
@@ -15,9 +17,12 @@ export const translations: Translations = {
     budgetQuestion: "What is your budget?",
     countryQuestion: "Which country are you located in?",
     emailQuestion: "What is your email?",
-    footerDisclaimer: "Powered by OpenAI GPT-4 – Respect your privacy and data security."
+    footerDisclaimer: "Powered by OpenAI GPT-4 – Respect your privacy and data security.",
+    successMessage: "Thank you for your information! We will send you job offers directly to your email.",
   },
   fr: {
+    userIdentifier: "Vous",
+    userChoice: "Vous avez choisi:",
     title: "L'IA qui te trouve un job en 1H",
     welcome: "Bienvenue sur Jooby !",
     question:
@@ -31,6 +36,7 @@ export const translations: Translations = {
     budgetQuestion: "Quel est votre budget?",
     countryQuestion: "Dans quel pays êtes-vous situé?",
     emailQuestion: "Quel est votre e-mail?",
-    footerDisclaimer: "Powered by OpenAI GPT-4 – Respect de votre vie privée et sécurité des données."
+    footerDisclaimer: "Powered by OpenAI GPT-4 – Respect de votre vie privée et sécurité des données.",
+    successMessage: "Merci pour vos informations! Nous vous enverrons des offres d'emploi directement à votre e-mail.",
   },
 };
