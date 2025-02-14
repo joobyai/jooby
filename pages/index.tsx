@@ -1,57 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
-
 import React, { useState, useEffect } from "react";
-
-// Définir les types pour les traductions
-interface Translations {
-  en: {
-    title: string;
-    welcome: string;
-    question: string;
-    onlineJob: string;
-    localJob: string;
-    placeholder: string;
-    send: string;
-    disclaimer: string;
-  };
-  fr: {
-    title: string;
-    welcome: string;
-    question: string;
-    onlineJob: string;
-    localJob: string;
-    placeholder: string;
-    send: string;
-    disclaimer: string;
-  };
-}
-
-const translations: Translations = {
-  en: {
-    title: "The AI that finds you a job in 1 hour",
-    welcome: "Welcome to Jooby!",
-    question:
-      "Would you like me to find you an online job or one near your location?",
-    onlineJob: "Find an online job",
-    localJob: "Find a job near me",
-    placeholder: "Enter your message...",
-    send: "Send",
-    disclaimer:
-      "By using Jooby, you agree that your data may be used to connect you with companies looking for freelancers. Your responses may be shared via email and SMS with potential recruiters.",
-  },
-  fr: {
-    title: "L'IA qui te trouve un job en 1H", // Pas d'échappement HTML pour l'apostrophe
-    welcome: "Bienvenue sur Jooby !",
-    question:
-      "Souhaites-tu que je te trouve un emploi en ligne ou près de chez toi ?",
-    onlineJob: "Trouver un job en ligne",
-    localJob: "Trouver un job près de chez moi",
-    placeholder: "Entrez votre message...",
-    send: "Envoyer",
-    disclaimer:
-      "En utilisant Jooby, vous acceptez que vos données puissent être utilisées pour vous connecter avec des entreprises à la recherche de freelances. Vos réponses pourront être partagées via email et SMS avec des recruteurs potentiels.",
-  },
-};
+import { translations } from "./locale";
 
 const Jooby = () => {
   const [language, setLanguage] = useState<keyof typeof translations>("fr");
@@ -60,10 +9,35 @@ const Jooby = () => {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(false);
+  const [jobType, setJobType] = useState<"online" | "local" | null>(null);
+  const [budget, setBudget] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
 
+  // Carregar dados do localStorage ao montar o componente
   useEffect(() => {
+    const savedData = JSON.parse(localStorage.getItem("joobyChatData") || "{}");
+    if (savedData) {
+      setJobType(savedData.jobType || null);
+      setBudget(savedData.budget || null);
+      setCountry(savedData.country || null);
+      setEmail(savedData.email || null);
+      setChatMessages(savedData.chatMessages || []);
+    }
     setTimeout(() => setLoading(false), 2000);
   }, []);
+
+  // Salvar dados no localStorage sempre que houver mudanças nos estados relevantes
+  useEffect(() => {
+    const dataToSave = {
+      jobType,
+      budget,
+      country,
+      email,
+      chatMessages,
+    };
+    localStorage.setItem("joobyChatData", JSON.stringify(dataToSave));
+  }, [jobType, budget, country, email, chatMessages]);
 
   const t = translations[language];
 
@@ -71,21 +45,71 @@ const Jooby = () => {
     setLanguage(lang);
   };
 
-  const startChat = (jobType: "online" | "local") => {
+  const startChat = (selectedJobType: "online" | "local") => {
+    setJobType(selectedJobType);
     setChatOpen(true);
     setChatMessages([
       `${t.welcome}\n${t.question}`,
-      `Tu as choisi: ${jobType === "online" ? t.onlineJob : t.localJob}`,
+      `Vous avez choisi: ${
+        selectedJobType === "online" ? t.onlineJob : t.localJob
+      }`,
+      t.budgetQuestion,
     ]);
   };
 
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
+    console.log(userInput);
+
     const newMessages = [...chatMessages, `Vous: ${userInput}`];
     setChatMessages(newMessages);
     setUserInput("");
     setTyping(true);
+
+    if (!budget) {
+
+      const parsedBudget = parseFloat(userInput);
+      if (isNaN(parsedBudget)) {
+        setChatMessages([...newMessages, "❌ Veuillez entrer un budget valide."]);
+        setTyping(false);
+        return;
+      }
+      setBudget(userInput);
+      setChatMessages([...newMessages, t.countryQuestion]);
+      setTyping(false);
+      return;
+    }
+
+    if (!country) {
+      // Validar se o país é uma string válida
+      if (!/^[a-zA-Z\s]+$/.test(userInput)) {
+        setChatMessages([...newMessages, "❌ Veuillez entrer un pays valide."]);
+        setTyping(false);
+        return;
+      }
+      setCountry(userInput);
+      setChatMessages([...newMessages, t.emailQuestion]);
+      setTyping(false);
+      return;
+    }
+
+    if (!email) {
+      // Validar se o e-mail é válido
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(userInput)) {
+        setChatMessages([...newMessages, "❌ Veuillez entrer un e-mail valide."]);
+        setTyping(false);
+        return;
+      }
+      setEmail(userInput);
+      setTyping(false);
+      setChatMessages([
+        ...newMessages,
+        "Merci pour vos informations! Nous vous enverrons des offres d'emploi directement à votre e-mail.",
+      ]);
+      return;
+    }
 
     try {
       const response = await fetch("/api/openai", {
@@ -93,9 +117,7 @@ const Jooby = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userMessage: userInput }),
       });
-
       const data = await response.json();
-
       setTyping(false);
       setChatMessages([
         ...newMessages,
@@ -103,10 +125,7 @@ const Jooby = () => {
       ]);
     } catch (error: unknown) {
       console.error("Erreur OpenAI:", error);
-
       setTyping(false);
-
-      // Vérification si `error` est une instance d'Error
       const errorMessage =
         error instanceof Error ? error.message : "Erreur inconnue";
       setChatMessages([...newMessages, `❌ Erreur serveur: ${errorMessage}`]);
@@ -123,6 +142,7 @@ const Jooby = () => {
 
   return (
     <div className="flex h-screen w-screen flex-col bg-gray-900 text-white p-4 relative">
+      {/* Language Selector */}
       <div className="absolute top-4 right-4 flex space-x-2">
         <button
           onClick={() => handleLanguageChange("fr")}
@@ -141,6 +161,8 @@ const Jooby = () => {
           EN
         </button>
       </div>
+
+      {/* Main Content */}
       <div className="text-center pt-10">
         <div className="text-5xl font-bold">∞</div>
         <h1 className="text-2xl font-bold">Jooby</h1>
@@ -164,12 +186,15 @@ const Jooby = () => {
         </div>
         <p className="text-xs text-gray-400 mt-6">{t.disclaimer}</p>
       </div>
+
+      {/* Footer */}
       <div className="absolute bottom-0 w-full text-center text-xs text-gray-400 py-4">
         <p>
-          Powered by OpenAI GPT-4 – Respect de votre vie privée et sécurité des
-          données.
+          {t.footerDisclaimer}
         </p>
       </div>
+
+      {/* Chat Window */}
       {chatOpen && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-80 z-50">
           <div className="relative w-full max-w-4xl bg-gray-700 p-6 rounded-lg shadow-xl">
