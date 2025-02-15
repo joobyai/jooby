@@ -17,7 +17,9 @@ interface TranslationContent {
   successMessage: string;
 }
 
-export interface Translations {
+interface Translations {
   en: TranslationContent;
   fr: TranslationContent;
 }
+
+export default Translations;

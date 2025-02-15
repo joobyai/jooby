@@ -1,6 +1,6 @@
-import { Translations } from "../types";
+import Translations from "./types";
 
-export const translations: Translations = {
+const locale: Translations = {
   en: {
     userIdentifier: "You",
     userChoice: "You have chosen: ",
@@ -42,3 +42,5 @@ export const translations: Translations = {
     successMessage: "Merci pour vos informations! Nous vous enverrons des offres d'emploi directement à votre e-mail.",
   },
 };
+
+export default locale;

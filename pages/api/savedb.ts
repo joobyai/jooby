@@ -1,6 +1,6 @@
 // pages/api/saveDb.ts
 import { NextApiResponse, NextApiRequest } from "next";
-import { db } from "../lib/firebase";
+import { db } from "../../lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface LeadData {

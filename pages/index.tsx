@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { translations } from "./locale";
+import Translations from "../lib/locale";
+import locale from "../lib/locale";
 
 const Jooby = () => {
-  const [language, setLanguage] = useState<keyof typeof translations>("fr");
+  const [language, setLanguage] = useState<keyof typeof Translations>("en");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<string[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -22,32 +23,32 @@ const Jooby = () => {
 
   const steps = [
     {
-      question: (t: typeof translations["en"]) => t.budgetQuestion,
+      question: (t: typeof Translations["en"]) => t.budgetQuestion,
       variableSetter: setBudget,
       validator: (input: string) => !isNaN(parseFloat(input)),
       errorMessage: "❌ Veuillez entrer un budget valide.",
     },
     {
-      question: (t: typeof translations["en"]) => t.countryQuestion,
+      question: (t: typeof Translations["en"]) => t.countryQuestion,
       variableSetter: setCountry,
       validator: (input: string) => /^[a-zA-Z\s]+$/.test(input),
       errorMessage: "❌ Veuillez entrer un pays valide.",
     },
     {
-      question: (t: typeof translations["en"]) => t.skillsQuestion,
+      question: (t: typeof Translations["en"]) => t.skillsQuestion,
       variableSetter: setSkills,
       validator: (input: string) => input.length <= 100 && /^[a-zA-Z\s]+$/.test(input),
       errorMessage: "❌ Veuillez entrer des compétences valides.",
     },
     {
-      question: (t: typeof translations["en"]) => t.emailQuestion,
+      question: (t: typeof Translations["en"]) => t.emailQuestion,
       variableSetter: setEmail,
       validator: (input: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input),
       errorMessage: "❌ Veuillez entrer un e-mail valide.",
     },
   ];
 
-  const t = translations[language];
+  const t = locale[language as keyof typeof Translations];
 
   const handleLanguageChange = (lang: "fr" | "en") => {
     setLanguage(lang);
@@ -142,6 +143,30 @@ const Jooby = () => {
     }
   };
 
+  const sendToWebhook = async () => {
+    try {
+      const response = await fetch("/api/ghl", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobType,
+          localization: country,
+          budget,
+          email,
+          skills,
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log("Data sent to webhook:", data);
+    } catch (error) {
+      console.error("Error sending data to webhook:", error);
+    }
+  }
+
   useEffect(() => {
     setTimeout(() => setLoading(false), 2000);
   }, [setLoading]);
@@ -155,9 +180,22 @@ const Jooby = () => {
   useEffect(() => {
     if (canSaveToDb && isSkillsExtracted) {
       console.log("Entering save to DB...");
-      saveToDb();
+      
+      const handleSaveAndWebhook = async () => {
+        try {
+
+          await saveToDb();
+
+          console.log("Data saved to DB, sending to webhook...");
+          sendToWebhook();
+        } catch (error) {
+          console.error("Error during saveToDb or sendToWebhook:", error);
+        }
+      };
+  
+      handleSaveAndWebhook();
     }
-  }, [canSaveToDb, isSkillsExtracted, saveToDb]);
+  }, [canSaveToDb, isSkillsExtracted, saveToDb, sendToWebhook]);
 
   if (loading) {
     return (
