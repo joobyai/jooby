@@ -143,7 +143,10 @@ const Jooby = () => {
   };
 
   useEffect(() => {
+    setTimeout(() => setLoading(false), 2000);
+  }, [setLoading]);
 
+  useEffect(() => {
     if ( skills && !isSkillsExtracted ) {
       fetchSkills();
     }
@@ -233,7 +236,7 @@ const Jooby = () => {
                 </p>
               ))}
               {typing && (
-                <p className="text-gray-400">Jooby est en train d'écrire...</p>
+                <p className="text-gray-400">Jooby est en train d&apos;écrire...</p>
               )}
             </div>
             <div className="flex w-full space-x-2">
