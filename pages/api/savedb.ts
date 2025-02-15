@@ -1,4 +1,5 @@
 // pages/api/saveDb.ts
+import { NextApiResponse, NextApiRequest } from "next";
 import { db } from "../lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
@@ -10,7 +11,7 @@ interface LeadData {
   skills: string;
 }
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
       console.log("req.body", req.body);
