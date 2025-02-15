@@ -123,20 +123,6 @@ const Jooby = () => {
     }
   };
 
-  useEffect(() => {
-    if (isSkillsExtracted) {
-      fetchSkills();
-    }
-  }, [skills]);
-
-  useEffect(() => {
-    console.log(canSaveToDb);
-    if (canSaveToDb) {
-      console.log("Entering save to DB...");
-      saveToDb();
-    }
-  }, [canSaveToDb]);
-
   const fetchSkills = async () => {
     try {
 
@@ -150,14 +136,28 @@ const Jooby = () => {
         body: JSON.stringify({ userMessage: aiMessage }),
       });
       const { message } = await response.json();
-      const extractedSkills = JSON.parse(message).choices[0].message.content;
-      setSkills(extractedSkills);
+      setSkills(message);
       setIsSkillsExtracted(true);
+      console.log("Skills extracted:", message);
     } catch (error) {
       console.error("Error fetching skills:", error);
       setIsSkillsExtracted(false);
     }
   };
+
+  useEffect(() => {
+
+    if ( skills && !isSkillsExtracted ) {
+      fetchSkills();
+    }
+  }, [skills, isSkillsExtracted]);
+
+  useEffect(() => {
+    if (canSaveToDb && isSkillsExtracted) {
+      console.log("Entering save to DB...");
+      saveToDb();
+    }
+  }, [canSaveToDb, isSkillsExtracted]);
 
   if (loading) {
     return (
