@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect } from "react";
 import { translations } from "./locale";
 
@@ -7,37 +6,51 @@ const Jooby = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<string[]>([]);
   const [userInput, setUserInput] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [typing, setTyping] = useState(false);
+
+  // Variables to store user data
   const [jobType, setJobType] = useState<"online" | "local" | null>(null);
   const [budget, setBudget] = useState<string | null>(null);
   const [country, setCountry] = useState<string | null>(null);
+  const [skills, setSkills] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [isSkillsExtracted, setIsSkillsExtracted] = useState(false);
+  const [canSaveToDb, setCanSaveToDb] = useState(false);
+
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const steps = [
+    {
+      question: (t: any) => t.budgetQuestion,
+      variableSetter: setBudget,
+      validator: (input: string) => !isNaN(parseFloat(input)),
+      errorMessage: "❌ Veuillez entrer un budget valide.",
+    },
+    {
+      question: (t: any) => t.countryQuestion,
+      variableSetter: setCountry,
+      validator: (input: string) => /^[a-zA-Z\s]+$/.test(input),
+      errorMessage: "❌ Veuillez entrer un pays valide.",
+    },
+    {
+      question: (t: any) => t.skillsQuestion,
+      variableSetter: setSkills,
+      validator: (input: string) => input.length <= 100 && /^[a-zA-Z\s]+$/.test(input),
+      errorMessage: "❌ Veuillez entrer des compétences valides.",
+    },
+    {
+      question: (t: any) => t.emailQuestion,
+      variableSetter: setEmail,
+      validator: (input: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input),
+      errorMessage: "❌ Veuillez entrer un e-mail valide.",
+    },
+  ];
 
   useEffect(() => {
-    const savedData = JSON.parse(localStorage.getItem("joobyChatData") || "{}");
-    if (savedData) {
-      setJobType(savedData.jobType || null);
-      setBudget(savedData.budget || null);
-      setCountry(savedData.country || null);
-      setEmail(savedData.email || null);
-      setChatMessages(savedData.chatMessages || []);
-    }
     setTimeout(() => setLoading(false), 2000);
   }, []);
 
-  /*
-  useEffect(() => {
-    const dataToSave = {
-      jobType,
-      budget,
-      country,
-      email,
-      chatMessages,
-    };
-    localStorage.setItem("joobyChatData", JSON.stringify(dataToSave));
-  }, [jobType, budget, country, email, chatMessages]);
-  */
   const t = translations[language];
 
   const handleLanguageChange = (lang: "fr" | "en") => {
@@ -52,7 +65,7 @@ const Jooby = () => {
       `${t.userChoice} ${
         selectedJobType === "online" ? t.onlineJob : t.localJob
       }`,
-      t.budgetQuestion,
+      steps[currentStep].question(t),
     ]);
   };
 
@@ -64,68 +77,85 @@ const Jooby = () => {
     setUserInput("");
     setTyping(true);
 
-    if (!budget) {
-      // Validar se o orçamento é um número
-      const parsedBudget = parseFloat(userInput);
-      if (isNaN(parsedBudget)) {
-        setChatMessages([...newMessages, "❌ Veuillez entrer un budget valide."]);
-        setTyping(false);
-        return;
-      }
-      setBudget(userInput);
-      setChatMessages([...newMessages, t.countryQuestion]);
+    const currentStepConfig = steps[currentStep];
+
+    if (!currentStepConfig.validator(userInput)) {
+      setChatMessages([...newMessages, currentStepConfig.errorMessage]);
       setTyping(false);
       return;
     }
 
-    if (!country) {
-      // Validar se o país é uma string válida
-      if (!/^[a-zA-Z\s]+$/.test(userInput)) {
-        setChatMessages([...newMessages, "❌ Veuillez entrer un pays valide."]);
-        setTyping(false);
-        return;
-      }
-      setCountry(userInput);
-      setChatMessages([...newMessages, t.emailQuestion]);
-      setTyping(false);
-      return;
-    }
+    currentStepConfig.variableSetter(userInput);
 
-    if (!email) {
-      // Validar se o e-mail é válido
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(userInput)) {
-        setChatMessages([...newMessages, "❌ Veuillez entrer un e-mail valide."]);
-        setTyping(false);
-        return;
-      }
-      setEmail(userInput);
-      setTyping(false);
-      setChatMessages([
-        ...newMessages,
-        t.successMessage,
-      ]);
-      return;
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+      setChatMessages([...newMessages, steps[currentStep + 1].question(t)]);
+    } else {
+      setChatMessages([...newMessages, t.successMessage]);
+      setCanSaveToDb(true);
     }
+    
+    setTyping(false);
+  };
 
+  const saveToDb = async () => {
+    console.log("Saving to DB...");
     try {
+      const response = await fetch("/api/savedb", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: Math.random().toString(36),
+          localization: country,
+          budget,
+          email,
+          skills,
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log("Data saved:", data);
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isSkillsExtracted) {
+      fetchSkills();
+    }
+  }, [skills]);
+
+  useEffect(() => {
+    console.log(canSaveToDb);
+    if (canSaveToDb) {
+      console.log("Entering save to DB...");
+      saveToDb();
+    }
+  }, [canSaveToDb]);
+
+  const fetchSkills = async () => {
+    try {
+
+      const aiMessage = `Extract the skills from the following text: ${skills} and return in JSON format.`;
+
       const response = await fetch("/api/openai", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userMessage: userInput }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userMessage: aiMessage }),
       });
-      const data = await response.json();
-      setTyping(false);
-      setChatMessages([
-        ...newMessages,
-        `Jooby: ${data.message || "Désolé, je n'ai pas compris."}`,
-      ]);
-    } catch (error: unknown) {
-      console.error("Erreur OpenAI:", error);
-      setTyping(false);
-      const errorMessage =
-        error instanceof Error ? error.message : "Erreur inconnue";
-      setChatMessages([...newMessages, `❌ Erreur serveur: ${errorMessage}`]);
+      const { message } = await response.json();
+      const extractedSkills = JSON.parse(message).choices[0].message.content;
+      setSkills(extractedSkills);
+      setIsSkillsExtracted(true);
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+      setIsSkillsExtracted(false);
     }
   };
 
@@ -185,8 +215,7 @@ const Jooby = () => {
       {/* Footer */}
       <div className="text-center text-xs text-gray-400 py-4">
         <p>
-          Powered by OpenAI GPT-4 – Respect de votre vie privée et sécurité des
-          données.
+          {t.footerDisclaimer}
         </p>
       </div>
 
