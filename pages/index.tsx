@@ -22,34 +22,30 @@ const Jooby = () => {
 
   const steps = [
     {
-      question: (t: any) => t.budgetQuestion,
+      question: (t: typeof translations["en"]) => t.budgetQuestion,
       variableSetter: setBudget,
       validator: (input: string) => !isNaN(parseFloat(input)),
       errorMessage: "❌ Veuillez entrer un budget valide.",
     },
     {
-      question: (t: any) => t.countryQuestion,
+      question: (t: typeof translations["en"]) => t.countryQuestion,
       variableSetter: setCountry,
       validator: (input: string) => /^[a-zA-Z\s]+$/.test(input),
       errorMessage: "❌ Veuillez entrer un pays valide.",
     },
     {
-      question: (t: any) => t.skillsQuestion,
+      question: (t: typeof translations["en"]) => t.skillsQuestion,
       variableSetter: setSkills,
       validator: (input: string) => input.length <= 100 && /^[a-zA-Z\s]+$/.test(input),
       errorMessage: "❌ Veuillez entrer des compétences valides.",
     },
     {
-      question: (t: any) => t.emailQuestion,
+      question: (t: typeof translations["en"]) => t.emailQuestion,
       variableSetter: setEmail,
       validator: (input: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input),
       errorMessage: "❌ Veuillez entrer un e-mail valide.",
     },
   ];
-
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 2000);
-  }, []);
 
   const t = translations[language];
 
@@ -108,6 +104,7 @@ const Jooby = () => {
         },
         body: JSON.stringify({
           id: Math.random().toString(36),
+          jobType,
           localization: country,
           budget,
           email,
@@ -150,14 +147,14 @@ const Jooby = () => {
     if ( skills && !isSkillsExtracted ) {
       fetchSkills();
     }
-  }, [skills, isSkillsExtracted]);
+  }, [skills, isSkillsExtracted, fetchSkills]);
 
   useEffect(() => {
     if (canSaveToDb && isSkillsExtracted) {
       console.log("Entering save to DB...");
       saveToDb();
     }
-  }, [canSaveToDb, isSkillsExtracted]);
+  }, [canSaveToDb, isSkillsExtracted, saveToDb]);
 
   if (loading) {
     return (

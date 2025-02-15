@@ -5,6 +5,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface LeadData {
   id: string;
+  jobType: string;
   localization: string;
   budget: number;
   email: string;
@@ -15,15 +16,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "POST") {
     try {
       console.log("req.body", req.body);
-      const { id, localization, budget, email, skills }: LeadData = req.body;
+      const { id, jobType, localization, budget, email, skills }: LeadData = req.body;
 
       if (!id || !localization || !budget || !email || !skills) {
         return res.status(400).json({ error: "All fields are required." });
       }
 
       const leadsCollection = collection(db, "leads");
-      const docRef = await addDoc(leadsCollection, {
+      await addDoc(leadsCollection, {
         id,
+        jobType,
         localization,
         budget,
         email,
