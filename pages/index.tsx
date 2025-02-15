@@ -1,65 +1,51 @@
-/* eslint-disable react/no-unescaped-entities */
-
 import React, { useState, useEffect } from "react";
-
-// Définir les types pour les traductions
-interface Translations {
-  en: {
-    title: string;
-    welcome: string;
-    question: string;
-    onlineJob: string;
-    localJob: string;
-    placeholder: string;
-    send: string;
-    disclaimer: string;
-  };
-  fr: {
-    title: string;
-    welcome: string;
-    question: string;
-    onlineJob: string;
-    localJob: string;
-    placeholder: string;
-    send: string;
-    disclaimer: string;
-  };
-}
-
-const translations: Translations = {
-  en: {
-    title: "The AI that finds you a job in 1 hour",
-    welcome: "Welcome to Jooby!",
-    question:
-      "Would you like me to find you an online job or one near your location?",
-    onlineJob: "Find an online job",
-    localJob: "Find a job near me",
-    placeholder: "Enter your message...",
-    send: "Send",
-    disclaimer:
-      "By using Jooby, you agree that your data may be used to connect you with companies looking for freelancers. Your responses may be shared via email and SMS with potential recruiters.",
-  },
-  fr: {
-    title: "L'IA qui te trouve un job en 1H", // Pas d'échappement HTML pour l'apostrophe
-    welcome: "Bienvenue sur Jooby !",
-    question:
-      "Souhaites-tu que je te trouve un emploi en ligne ou près de chez toi ?",
-    onlineJob: "Trouver un job en ligne",
-    localJob: "Trouver un job près de chez moi",
-    placeholder: "Entrez votre message...",
-    send: "Envoyer",
-    disclaimer:
-      "En utilisant Jooby, vous acceptez que vos données puissent être utilisées pour vous connecter avec des entreprises à la recherche de freelances. Vos réponses pourront être partagées via email et SMS avec des recruteurs potentiels.",
-  },
-};
+import { translations } from "./locale";
 
 const Jooby = () => {
   const [language, setLanguage] = useState<keyof typeof translations>("fr");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<string[]>([]);
   const [userInput, setUserInput] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [typing, setTyping] = useState(false);
+
+  // Variables to store user data
+  const [jobType, setJobType] = useState<"online" | "local" | null>(null);
+  const [budget, setBudget] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>(null);
+  const [skills, setSkills] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [isSkillsExtracted, setIsSkillsExtracted] = useState(false);
+  const [canSaveToDb, setCanSaveToDb] = useState(false);
+
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const steps = [
+    {
+      question: (t: any) => t.budgetQuestion,
+      variableSetter: setBudget,
+      validator: (input: string) => !isNaN(parseFloat(input)),
+      errorMessage: "❌ Veuillez entrer un budget valide.",
+    },
+    {
+      question: (t: any) => t.countryQuestion,
+      variableSetter: setCountry,
+      validator: (input: string) => /^[a-zA-Z\s]+$/.test(input),
+      errorMessage: "❌ Veuillez entrer un pays valide.",
+    },
+    {
+      question: (t: any) => t.skillsQuestion,
+      variableSetter: setSkills,
+      validator: (input: string) => input.length <= 100 && /^[a-zA-Z\s]+$/.test(input),
+      errorMessage: "❌ Veuillez entrer des compétences valides.",
+    },
+    {
+      question: (t: any) => t.emailQuestion,
+      variableSetter: setEmail,
+      validator: (input: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input),
+      errorMessage: "❌ Veuillez entrer un e-mail valide.",
+    },
+  ];
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 2000);
@@ -71,59 +57,120 @@ const Jooby = () => {
     setLanguage(lang);
   };
 
-  const startChat = (jobType: "online" | "local") => {
+  const startChat = (selectedJobType: "online" | "local") => {
+    setJobType(selectedJobType);
     setChatOpen(true);
     setChatMessages([
       `${t.welcome}\n${t.question}`,
-      `Tu as choisi: ${jobType === "online" ? t.onlineJob : t.localJob}`,
+      `${t.userChoice} ${
+        selectedJobType === "online" ? t.onlineJob : t.localJob
+      }`,
+      steps[currentStep].question(t),
     ]);
   };
 
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    const newMessages = [...chatMessages, `Vous: ${userInput}`];
+    const newMessages = [...chatMessages, `${t.userIdentifier}: ${userInput}`];
     setChatMessages(newMessages);
     setUserInput("");
     setTyping(true);
 
+    const currentStepConfig = steps[currentStep];
+
+    if (!currentStepConfig.validator(userInput)) {
+      setChatMessages([...newMessages, currentStepConfig.errorMessage]);
+      setTyping(false);
+      return;
+    }
+
+    currentStepConfig.variableSetter(userInput);
+
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+      setChatMessages([...newMessages, steps[currentStep + 1].question(t)]);
+    } else {
+      setChatMessages([...newMessages, t.successMessage]);
+      setCanSaveToDb(true);
+    }
+    
+    setTyping(false);
+  };
+
+  const saveToDb = async () => {
+    console.log("Saving to DB...");
     try {
-      const response = await fetch("/api/openai", {
+      const response = await fetch("/api/savedb", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userMessage: userInput }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: Math.random().toString(36),
+          localization: country,
+          budget,
+          email,
+          skills,
+        }),
       });
 
       const data = await response.json();
 
-      setTyping(false);
-      setChatMessages([
-        ...newMessages,
-        `Jooby: ${data.message || "Désolé, je n'ai pas compris."}`,
-      ]);
-    } catch (error: unknown) {
-      console.error("Erreur OpenAI:", error);
-
-      setTyping(false);
-
-      // Vérification si `error` est une instance d'Error
-      const errorMessage =
-        error instanceof Error ? error.message : "Erreur inconnue";
-      setChatMessages([...newMessages, `❌ Erreur serveur: ${errorMessage}`]);
+      console.log("Data saved:", data);
+    } catch (error) {
+      console.error("Error saving data:", error);
     }
   };
 
+  const fetchSkills = async () => {
+    try {
+
+      const aiMessage = `Extract the skills from the following text: ${skills} and return in JSON format.`;
+
+      const response = await fetch("/api/openai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userMessage: aiMessage }),
+      });
+      const { message } = await response.json();
+      setSkills(message);
+      setIsSkillsExtracted(true);
+      console.log("Skills extracted:", message);
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+      setIsSkillsExtracted(false);
+    }
+  };
+
+  useEffect(() => {
+
+    if ( skills && !isSkillsExtracted ) {
+      fetchSkills();
+    }
+  }, [skills, isSkillsExtracted]);
+
+  useEffect(() => {
+    if (canSaveToDb && isSkillsExtracted) {
+      console.log("Entering save to DB...");
+      saveToDb();
+    }
+  }, [canSaveToDb, isSkillsExtracted]);
+
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-gray-900 text-white">
+      <div className="flex items-center justify-center w-screen h-screen bg-gray-900 text-white">
         <div className="animate-spin text-5xl font-bold">∞</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-gray-900 text-white p-4 relative">
-      <div className="absolute top-4 right-4 flex space-x-2">
+    <div className="flex flex-col w-screen h-screen bg-gray-900 text-white p-4 relative overflow-hidden">
+      {/* Language Selector */}
+      <div className="absolute top-4 right-4 flex space-x-2 z-50">
         <button
           onClick={() => handleLanguageChange("fr")}
           className={`px-4 py-2 rounded-md text-sm font-semibold ${
@@ -141,12 +188,12 @@ const Jooby = () => {
           EN
         </button>
       </div>
-      <div className="text-center pt-10">
+
+      {/* Main Content */}
+      <div className="flex flex-col items-center justify-center flex-grow">
         <div className="text-5xl font-bold">∞</div>
         <h1 className="text-2xl font-bold">Jooby</h1>
-      </div>
-      <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto mt-[5rem]">
-        <div className="text-3xl font-semibold">{t.title}</div>
+        <div className="text-3xl font-semibold mt-4">{t.title}</div>
         <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-xl mt-6">
           <p className="text-gray-300">{t.question}</p>
           <button
@@ -164,12 +211,15 @@ const Jooby = () => {
         </div>
         <p className="text-xs text-gray-400 mt-6">{t.disclaimer}</p>
       </div>
-      <div className="absolute bottom-0 w-full text-center text-xs text-gray-400 py-4">
+
+      {/* Footer */}
+      <div className="text-center text-xs text-gray-400 py-4">
         <p>
-          Powered by OpenAI GPT-4 – Respect de votre vie privée et sécurité des
-          données.
+          {t.footerDisclaimer}
         </p>
       </div>
+
+      {/* Chat Window */}
       {chatOpen && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-80 z-50">
           <div className="relative w-full max-w-4xl bg-gray-700 p-6 rounded-lg shadow-xl">
