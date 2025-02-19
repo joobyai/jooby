@@ -2,51 +2,27 @@ import React, { useState, useEffect } from "react";
 import Translations from "../lib/locale";
 import locale from "../lib/locale";
 
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 const Jooby = () => {
   const [language, setLanguage] = useState<keyof typeof Translations>("en");
   const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<string[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(false);
 
-  // Variables to store user data
   const [jobType, setJobType] = useState<"online" | "local" | null>(null);
   const [budget, setBudget] = useState<string | null>(null);
   const [country, setCountry] = useState<string | null>(null);
   const [skills, setSkills] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
-  const [isSkillsExtracted, setIsSkillsExtracted] = useState(false);
   const [canSaveToDb, setCanSaveToDb] = useState(false);
 
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const steps = [
-    {
-      question: (t: typeof Translations["en"]) => t.budgetQuestion,
-      variableSetter: setBudget,
-      validator: (input: string) => !isNaN(parseFloat(input)),
-      errorMessage: "❌ Veuillez entrer un budget valide.",
-    },
-    {
-      question: (t: typeof Translations["en"]) => t.countryQuestion,
-      variableSetter: setCountry,
-      validator: (input: string) => /^[a-zA-Z\s]+$/.test(input),
-      errorMessage: "❌ Veuillez entrer un pays valide.",
-    },
-    {
-      question: (t: typeof Translations["en"]) => t.skillsQuestion,
-      variableSetter: setSkills,
-      validator: (input: string) => input.length <= 100 && /^[a-zA-Z\s]+$/.test(input),
-      errorMessage: "❌ Veuillez entrer des compétences valides.",
-    },
-    {
-      question: (t: typeof Translations["en"]) => t.emailQuestion,
-      variableSetter: setEmail,
-      validator: (input: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input),
-      errorMessage: "❌ Veuillez entrer un e-mail valide.",
-    },
-  ];
+  const [isContextSet, setIsContextSet] = useState(false);
 
   const t = locale[language as keyof typeof Translations];
 
@@ -54,44 +30,74 @@ const Jooby = () => {
     setLanguage(lang);
   };
 
+  const setChatContext = async () => {
+    const chatContext =[{
+      role: "system",
+      content: "You are a conversational assistant collecting information for job openings. During the conversation, naturally ask for the following data: name, email, country, professional status, main goal, passions, budget, skills, and industry. Just return their messages (like the assistant). Do not include any user messages or responses in your output. Return the introduction to what you are going to ask and the first question",
+    }];
+    try {
+      const response = await fetch("/api/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversation: chatContext }),
+      });
+      const { message } = await response.json();
+
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: message.content },
+      ]);
+      setIsContextSet(true);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error setting chat context:", error);
+      setIsContextSet(false);
+      setLoading(false);
+    }
+  };
+
   const startChat = (selectedJobType: "online" | "local") => {
     setJobType(selectedJobType);
     setChatOpen(true);
-    setChatMessages([
-      `${t.welcome}\n${t.question}`,
-      `${t.userChoice} ${
-        selectedJobType === "online" ? t.onlineJob : t.localJob
-      }`,
-      steps[currentStep].question(t),
-    ]);
   };
 
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    const newMessages = [...chatMessages, `${t.userIdentifier}: ${userInput}`];
-    setChatMessages(newMessages);
+    const updatedChat: ChatMessage[] = [
+      ...chatMessages,
+      { role: "user", content: userInput },
+    ];
+    setChatMessages(updatedChat);
     setUserInput("");
     setTyping(true);
 
-    const currentStepConfig = steps[currentStep];
 
-    if (!currentStepConfig.validator(userInput)) {
-      setChatMessages([...newMessages, currentStepConfig.errorMessage]);
-      setTyping(false);
-      return;
+
+    try {
+      const response = await fetch("/api/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          { conversation: updatedChat }
+        ),
+      });
+      const { message: assistantReply } = await response.json();
+
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: assistantReply },
+      ]);
+    } catch (error) {
+      console.error("Error fetching assistant response:", error);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Error: Não foi possível obter resposta do assistente.",
+        },
+      ]);
     }
-
-    currentStepConfig.variableSetter(userInput);
-
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-      setChatMessages([...newMessages, steps[currentStep + 1].question(t)]);
-    } else {
-      setChatMessages([...newMessages, t.successMessage]);
-      setCanSaveToDb(true);
-    }
-    
     setTyping(false);
   };
 
@@ -100,9 +106,7 @@ const Jooby = () => {
     try {
       const response = await fetch("/api/savedb", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: Math.random().toString(36),
           jobType,
@@ -112,34 +116,10 @@ const Jooby = () => {
           skills,
         }),
       });
-
       const data = await response.json();
-
       console.log("Data saved:", data);
     } catch (error) {
       console.error("Error saving data:", error);
-    }
-  };
-
-  const fetchSkills = async () => {
-    try {
-
-      const aiMessage = `Extract the skills from the following text: ${skills} and return in JSON format.`;
-
-      const response = await fetch("/api/openai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userMessage: aiMessage }),
-      });
-      const { message } = await response.json();
-      setSkills(message);
-      setIsSkillsExtracted(true);
-      console.log("Skills extracted:", message);
-    } catch (error) {
-      console.error("Error fetching skills:", error);
-      setIsSkillsExtracted(false);
     }
   };
 
@@ -147,9 +127,7 @@ const Jooby = () => {
     try {
       const response = await fetch("/api/ghl", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           jobType,
           localization: country,
@@ -158,46 +136,38 @@ const Jooby = () => {
           skills,
         }),
       });
-
       const data = await response.json();
-
       console.log("Data sent to webhook:", data);
     } catch (error) {
       console.error("Error sending data to webhook:", error);
     }
-  }
+  };
 
   useEffect(() => {
-    setTimeout(() => setLoading(false), 2000);
-  }, [setLoading]);
-
-  useEffect(() => {
-    if ( skills && !isSkillsExtracted ) {
-      fetchSkills();
+    console.log("isContextSet:", isContextSet);
+    if (!isContextSet) {
+      setChatContext();
+    } else {
+      setLoading(false);
     }
-  }, [skills, isSkillsExtracted, fetchSkills]);
+  }, [isContextSet]);
 
   useEffect(() => {
-    if (canSaveToDb && isSkillsExtracted) {
-      console.log("Entering save to DB...");
-      
+    if (canSaveToDb) {
       const handleSaveAndWebhook = async () => {
         try {
-
           await saveToDb();
-
           console.log("Data saved to DB, sending to webhook...");
           sendToWebhook();
         } catch (error) {
           console.error("Error during saveToDb or sendToWebhook:", error);
         }
       };
-  
       handleSaveAndWebhook();
     }
-  }, [canSaveToDb, isSkillsExtracted, saveToDb, sendToWebhook]);
+  }, [canSaveToDb]);
 
-  if (loading) {
+  if (loading || !isContextSet) {
     return (
       <div className="flex items-center justify-center w-screen h-screen bg-gray-900 text-white">
         <div className="animate-spin text-5xl font-bold">∞</div>
@@ -252,9 +222,7 @@ const Jooby = () => {
 
       {/* Footer */}
       <div className="text-center text-xs text-gray-400 py-4">
-        <p>
-          {t.footerDisclaimer}
-        </p>
+        <p>{t.footerDisclaimer}</p>
       </div>
 
       {/* Chat Window */}
@@ -270,11 +238,14 @@ const Jooby = () => {
             <div className="overflow-y-auto max-h-96 w-full space-y-4 mb-4 p-4 bg-gray-800 rounded-md">
               {chatMessages.map((msg, index) => (
                 <p key={index} className="text-white">
-                  {msg}
+                  <strong>
+                    {msg.role === "user" ? `${t.userIdentifier}:` : "Assistant:"}
+                  </strong>{" "}
+                  {msg.content}
                 </p>
               ))}
               {typing && (
-                <p className="text-gray-400">Jooby est en train d&apos;écrire...</p>
+                <p className="text-gray-400">Assistant is typing...</p>
               )}
             </div>
             <div className="flex w-full space-x-2">

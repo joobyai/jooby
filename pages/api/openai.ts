@@ -13,16 +13,15 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      const { userMessage } = req.body;
+      const { conversation } = req.body;
 
-      // Envoi la requête à OpenAI pour obtenir une réponse en utilisant GPT-4
       const response = await openai.chat.completions.create({
         model: "gpt-4",
-        messages: [{ role: "user", content: userMessage }], // Utilise prompt à la place de messages
+        messages: conversation,
         max_tokens: 100,
       });
-
-      const message = response.choices[0].message.content;
+      console.log("OpenAI response:", response.choices);
+      const message = response.choices[0].message;
 
       // Envoie la réponse à l'utilisateur
       res.status(200).json({ message });
