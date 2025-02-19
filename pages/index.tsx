@@ -72,8 +72,6 @@ const Jooby = () => {
     setUserInput("");
     setTyping(true);
 
-
-
     try {
       const response = await fetch("/api/openai", {
         method: "POST",
@@ -82,11 +80,11 @@ const Jooby = () => {
           { conversation: updatedChat }
         ),
       });
-      const { message: assistantReply } = await response.json();
+      const { message } = await response.json();
 
       setChatMessages((prev) => [
         ...prev,
-        { role: "assistant", content: assistantReply },
+        { role: "assistant", content: message.content },
       ]);
     } catch (error) {
       console.error("Error fetching assistant response:", error);

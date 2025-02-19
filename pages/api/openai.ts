@@ -20,7 +20,6 @@ export default async function handler(
         messages: conversation,
         max_tokens: 100,
       });
-      console.log("OpenAI response:", response.choices);
       const message = response.choices[0].message;
 
       // Envoie la réponse à l'utilisateur
