@@ -16,10 +16,15 @@ const Jooby = () => {
   const [typing, setTyping] = useState(false);
 
   const [jobType, setJobType] = useState<"online" | "local" | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [budget, setBudget] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [country, setCountry] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [skills, setSkills] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [email, setEmail] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [canSaveToDb, setCanSaveToDb] = useState(false);
 
   const [isContextSet, setIsContextSet] = useState(false);
