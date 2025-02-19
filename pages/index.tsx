@@ -38,7 +38,7 @@ const Jooby = () => {
   const setChatContext = async () => {
     const chatContext =[{
       role: "system",
-      content: "You are a conversational assistant collecting information for job openings. During the conversation, naturally ask for the following data: name, email, country, professional status, main goal, passions, budget, skills, and industry. Just return their messages (like the assistant). Do not include any user messages or responses in your output. Return the introduction to what you are going to ask and the first question",
+      content: "You are a conversational assistant gathering information for job openings. During the conversation, you must only ask questions to collect the following data: name, email, country, professional status, main goal, passions, budget, skills, and industry. The user is only allowed to provide answers to your questions. If the user asks any other question or makes any comment that is not a direct answer, you must ignore it and simply remind the user to answer your question. Do not provide any information or answer any questions that are not directly related to collecting the required data. Begin by introducing the process and asking the first question."
     }];
     try {
       const response = await fetch("/api/openai", {
@@ -69,10 +69,19 @@ const Jooby = () => {
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
+    // include in the end of the userInput message a context to avoid assistant to answer questions
+    const contextedUserInput = `Check if the following answers the previous question: ${userInput}. If not, please ask again. If it does, please proceed to the next question.`
+
+    const payloadChat: ChatMessage[] = [
+      ...chatMessages,
+      { role: "user", content: contextedUserInput },
+    ];
+
     const updatedChat: ChatMessage[] = [
       ...chatMessages,
       { role: "user", content: userInput },
     ];
+
     setChatMessages(updatedChat);
     setUserInput("");
     setTyping(true);
@@ -82,7 +91,7 @@ const Jooby = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          { conversation: updatedChat }
+          { conversation: payloadChat }
         ),
       });
       const { message } = await response.json();
