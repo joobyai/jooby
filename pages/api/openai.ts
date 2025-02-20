@@ -13,11 +13,8 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      let { conversation, response_format } = req.body;
-
-      if (!response_format) {
-        response_format = "text";
-      }
+      const { conversation, response_format: initialResponseFormat } = req.body;
+      const response_format = initialResponseFormat || "text";
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
