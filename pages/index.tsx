@@ -106,7 +106,7 @@ const Jooby = () => {
     }
     setTyping(false);
   };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const createLead = async () => {
     console.log("Saving lead...");
     try {
@@ -129,39 +129,12 @@ const Jooby = () => {
     }
   };
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const updateLead = async () => {
-    console.log("Saving to DB...");
-    try {
-      const response = await fetch("/api/savedb", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: Math.random().toString(36),
-          jobType,
-          localization: country,
-          budget,
-          email,
-          skills,
-        }),
-      });
-      const data = await response.json();
-      console.log("Data saved:", data);
-    } catch (error) {
-      console.error("Error saving data:", error);
-    }
-  };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendToWebhook = async () => {
     try {
       const response = await fetch("/api/ghl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jobType,
-          localization: country,
-          budget,
-          email,
-          skills,
         }),
       });
       const data = await response.json();
@@ -184,20 +157,6 @@ const Jooby = () => {
       console.log("Data saved in cookies:", data);
     } catch (error) {
       console.error("Error saving data in cookies:", error);
-    }
-  }
-
-  const getSavedCookies = async () => {
-    try {
-      const response = await fetch("/api/cookies", {
-        method: "GET",
-      });
-      const data = await response.json();
-      console.log("Data retrieved from cookies:", data);
-      setLeadId(data.id);
-    }
-    catch (error) {
-      console.error("Error retrieving data from cookies:", error);
     }
   }
 
@@ -226,6 +185,24 @@ const Jooby = () => {
     }
   }
 
+  const saveExtractedInfoToDb = async () => {
+    console.log("Saving extracted info...");
+    try {
+      const response = await fetch("/api/savedb", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: leadId,
+          ...extractedInfo,
+        }),
+      });
+      const data = await response.json();
+      console.log("Data updated:", data);
+      setCanSaveToDb(false);
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  }
 
   useEffect(() => {
     setChatMessages([]);
@@ -248,25 +225,10 @@ const Jooby = () => {
   }, [chatMessages]);
 
   useEffect(() => {
-    console.log(extractedInfo);
+    saveExtractedInfoToDb
   }, [extractedInfo]);
 
-/*
-  useEffect(() => {
-    if (canSaveToDb) {
-      const handleSaveAndWebhook = async () => {
-        try {
-          await saveToDb();
-          console.log("Data saved to DB, sending to webhook...");
-          sendToWebhook();
-        } catch (error) {
-          console.error("Error during saveToDb or sendToWebhook:", error);
-        }
-      };
-      handleSaveAndWebhook();
-    }
-  }, [canSaveToDb]);
-*/
+
   if (loading || !isContextSet) {
     return (
       <div className="flex items-center justify-center w-screen h-screen bg-gray-900 text-white">
