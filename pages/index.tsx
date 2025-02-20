@@ -14,7 +14,7 @@ const Jooby = () => {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(false);
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [jobType, setJobType] = useState<"online" | "local" | null>(null);
   const [extractedInfo, setExtractedInfo] = useState<Record<string, string>>({});
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -225,7 +225,7 @@ const Jooby = () => {
   }, [chatMessages]);
 
   useEffect(() => {
-    saveExtractedInfoToDb
+    saveExtractedInfoToDb();
   }, [extractedInfo]);
 
 
