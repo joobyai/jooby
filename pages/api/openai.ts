@@ -13,12 +13,17 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      const { conversation } = req.body;
+      let { conversation, response_format } = req.body;
+
+      if (!response_format) {
+        response_format = "text";
+      }
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4o",
         messages: conversation,
         max_tokens: 100,
+        response_format: { type: response_format },
       });
       const message = response.choices[0].message;
 

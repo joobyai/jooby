@@ -128,21 +128,6 @@ const Jooby = () => {
       console.error("Error saving data:", error);
     }
   };
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const sendToWebhook = async () => {
-    try {
-      const response = await fetch("/api/ghl", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-        }),
-      });
-      const data = await response.json();
-      console.log("Data sent to webhook:", data);
-    } catch (error) {
-      console.error("Error sending data to webhook:", error);
-    }
-  };
 
   const saveToCookies = async () => {
     try {
@@ -160,12 +145,28 @@ const Jooby = () => {
     }
   }
 
+  const getSavedCookies = async () => {
+    try {
+      const response = await fetch("/api/cookies", {
+        method: "GET",
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error getting data from cookies:", error);
+    }
+  }
+
   const extractInfoFromChat = async () => {
+
+    if (chatMessages.length < 2) {
+      return;
+    }
 
     // add context to as ai to extract information into json
     const payloadChat: ChatMessage[] = [
       ...chatMessages,
-      { role: "system", content: 'In previous conversations, complete the following json if the information exists in the conversation and return only the completed json. If the information does not exist, leave the value in the json empty. {email: "",name: "",country: "",language: "",current_profession: "",objective: "",budget: "",skills: "",industry: ""}' },
+      { role: "system", content: 'Complete the following json if the information exists in the conversation and return only the completed json. If the information does not exist, leave the value in the json empty. {email: "",name: "",country: "",language: "",current_profession: "",objective: "",budget: "",skills: "",industry: ""}' },
     ];
 
     try {
@@ -173,12 +174,12 @@ const Jooby = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          { conversation: payloadChat }
+          { conversation: payloadChat, response_format: "json_object" }
         ),
       });
       const { message } = await response.json();
 
-      setExtractedInfo(message.content);
+      setExtractedInfo(JSON.parse(message.content));
 
     } catch (error) {
       console.error("Error extracting information from conversation:", error);
@@ -187,6 +188,8 @@ const Jooby = () => {
 
   const saveExtractedInfoToDb = async () => {
     console.log("Saving extracted info...");
+
+
     try {
       const response = await fetch("/api/savedb", {
         method: "PATCH",
@@ -203,6 +206,32 @@ const Jooby = () => {
       console.error("Error saving data:", error);
     }
   }
+
+  const sendExtractedInfoToWebhook = async () => {
+    try {
+      const response = await fetch("/api/ghl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...extractedInfo,
+        }),
+      });
+      const data = await response.json();
+      console.log("Data sent to webhook:", data);
+    } catch (error) {
+      console.error("Error sending data to webhook:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!leadId) {
+      getSavedCookies().then((data) => {
+        if (data.id) {
+          setLeadId(data.id);
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
     setChatMessages([]);
@@ -225,7 +254,10 @@ const Jooby = () => {
   }, [chatMessages]);
 
   useEffect(() => {
-    saveExtractedInfoToDb();
+    if (leadId && extractedInfo) {
+      saveExtractedInfoToDb();
+      sendExtractedInfoToWebhook();
+    }
   }, [extractedInfo]);
 
 
