@@ -3,7 +3,7 @@ import Translations from "../lib/locale";
 import locale from "../lib/locale";
 
 interface ChatMessage {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
@@ -16,18 +16,13 @@ const Jooby = () => {
   const [typing, setTyping] = useState(false);
 
   const [jobType, setJobType] = useState<"online" | "local" | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [budget, setBudget] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [country, setCountry] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [skills, setSkills] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [email, setEmail] = useState<string | null>(null);
+  const [extractedInfo, setExtractedInfo] = useState<Record<string, string>>({});
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [canSaveToDb, setCanSaveToDb] = useState(false);
 
   const [isContextSet, setIsContextSet] = useState(false);
+
+  const [leadId, setLeadId] = useState<string | null>(null);
 
   const t = locale[language as keyof typeof Translations];
 
@@ -113,7 +108,7 @@ const Jooby = () => {
   };
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const createLead = async () => {
-    console.log("Saving test...");
+    console.log("Saving lead...");
     try {
       const response = await fetch("/api/savedb", {
         method: "POST",
@@ -126,7 +121,7 @@ const Jooby = () => {
       
       if (data.success) {
         console.log("Data saved:", data);
-        
+        setLeadId(data.id);
       }
 
     } catch (error) {
@@ -176,12 +171,86 @@ const Jooby = () => {
     }
   };
 
+  const saveToCookies = async () => {
+    try {
+      const response = await fetch("/api/cookies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: leadId,
+        }),
+      });
+      const data = await response.json();
+      console.log("Data saved in cookies:", data);
+    } catch (error) {
+      console.error("Error saving data in cookies:", error);
+    }
+  }
+
+  const getSavedCookies = async () => {
+    try {
+      const response = await fetch("/api/cookies", {
+        method: "GET",
+      });
+      const data = await response.json();
+      console.log("Data retrieved from cookies:", data);
+      setLeadId(data.id);
+    }
+    catch (error) {
+      console.error("Error retrieving data from cookies:", error);
+    }
+  }
+
+  const extractInfoFromChat = async () => {
+
+    // add context to as ai to extract information into json
+    const payloadChat: ChatMessage[] = [
+      ...chatMessages,
+      { role: "system", content: 'In previous conversations, complete the following json if the information exists in the conversation and return only the completed json. If the information does not exist, leave the value in the json empty. {email: "",name: "",country: "",language: "",current_profession: "",objective: "",budget: "",skills: "",industry: ""}' },
+    ];
+
+    try {
+      const response = await fetch("/api/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          { conversation: payloadChat }
+        ),
+      });
+      const { message } = await response.json();
+
+      setExtractedInfo(message.content);
+
+    } catch (error) {
+      console.error("Error extracting information from conversation:", error);
+    }
+  }
+
+
   useEffect(() => {
     setChatMessages([]);
     setIsContextSet(false);
     setLoading(true);
     setChatContext();
+    if (!leadId) {
+      createLead();
+    }
   }, [language]);
+
+  useEffect(() => {
+    if (leadId) {
+      saveToCookies();
+    }
+  }, [leadId]);
+
+  useEffect(() => {
+    extractInfoFromChat();
+  }, [chatMessages]);
+
+  useEffect(() => {
+    console.log(extractedInfo);
+  }, [extractedInfo]);
+
 /*
   useEffect(() => {
     if (canSaveToDb) {
