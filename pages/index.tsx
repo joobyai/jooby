@@ -111,7 +111,7 @@ const Jooby = () => {
     }
     setTyping(false);
   };
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const createLead = async () => {
     console.log("Saving test...");
     try {
@@ -133,7 +133,7 @@ const Jooby = () => {
       console.error("Error saving data:", error);
     }
   };
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updateLead = async () => {
     console.log("Saving to DB...");
     try {
@@ -155,7 +155,7 @@ const Jooby = () => {
       console.error("Error saving data:", error);
     }
   };
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const sendToWebhook = async () => {
     try {
       const response = await fetch("/api/ghl", {
