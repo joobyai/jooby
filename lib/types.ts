@@ -1,4 +1,6 @@
 interface TranslationContent {
+  context: string;
+  typing: string;
   userIdentifier: string;
   userChoice: string;
   title: string;

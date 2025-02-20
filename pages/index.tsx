@@ -38,7 +38,7 @@ const Jooby = () => {
   const setChatContext = async () => {
     const chatContext =[{
       role: "system",
-      content: "You are a conversational assistant gathering information for job openings. During the conversation, you must only ask questions to collect the following data: name, email, country, professional status, main goal, passions, budget, skills, and industry. The user is only allowed to provide answers to your questions. If the user asks any other question or makes any comment that is not a direct answer, you must ignore it and simply remind the user to answer your question. Do not provide any information or answer any questions that are not directly related to collecting the required data. Begin by introducing the process and asking the first question."
+      content: t.context,
     }];
     try {
       const response = await fetch("/api/openai", {
@@ -69,7 +69,6 @@ const Jooby = () => {
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    // include in the end of the userInput message a context to avoid assistant to answer questions
     const contextedUserInput = `Check if the following answers the previous question: ${userInput}. If not, please ask again. If it does, please proceed to the next question.`
 
     const payloadChat: ChatMessage[] = [
@@ -113,7 +112,29 @@ const Jooby = () => {
     setTyping(false);
   };
 
-  const saveToDb = async () => {
+  const createLead = async () => {
+    console.log("Saving test...");
+    try {
+      const response = await fetch("/api/savedb", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: Math.random().toString(36),
+        }),
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log("Data saved:", data);
+        
+      }
+
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  };
+
+  const updateLead = async () => {
     console.log("Saving to DB...");
     try {
       const response = await fetch("/api/savedb", {
@@ -156,14 +177,12 @@ const Jooby = () => {
   };
 
   useEffect(() => {
-    console.log("isContextSet:", isContextSet);
-    if (!isContextSet) {
-      setChatContext();
-    } else {
-      setLoading(false);
-    }
-  }, [isContextSet]);
-
+    setChatMessages([]);
+    setIsContextSet(false);
+    setLoading(true);
+    setChatContext();
+  }, [language]);
+/*
   useEffect(() => {
     if (canSaveToDb) {
       const handleSaveAndWebhook = async () => {
@@ -178,7 +197,7 @@ const Jooby = () => {
       handleSaveAndWebhook();
     }
   }, [canSaveToDb]);
-
+*/
   if (loading || !isContextSet) {
     return (
       <div className="flex items-center justify-center w-screen h-screen bg-gray-900 text-white">
@@ -251,13 +270,13 @@ const Jooby = () => {
               {chatMessages.map((msg, index) => (
                 <p key={index} className="text-white">
                   <strong>
-                    {msg.role === "user" ? `${t.userIdentifier}:` : "Assistant:"}
+                    {msg.role === "user" ? `${t.userIdentifier}:` : "Jooby:"}
                   </strong>{" "}
                   {msg.content}
                 </p>
               ))}
               {typing && (
-                <p className="text-gray-400">Assistant is typing...</p>
+                <p className="text-gray-400">{t.typing}</p>
               )}
             </div>
             <div className="flex w-full space-x-2">
