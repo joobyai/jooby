@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import Translations from "../lib/locale";
-import locale from "../lib/locale";
 import Translations, { TranslationContent } from "../lib/locale";
+import locale from "../lib/locale";
+
 
 
 interface ChatMessage {
