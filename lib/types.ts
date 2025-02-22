@@ -18,6 +18,11 @@ interface TranslationContent {
   skillsQuestion: string;
   footerDisclaimer: string;
   successMessage: string;
+  nameQuestion: string;
+  sectorQuestion: string;
+  jobTypeQuestion: string;
+  experienceQuestion: string;
+  availabilityQuestion: string;
 }
 
 interface Translations {
