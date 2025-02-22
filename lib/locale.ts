@@ -5,7 +5,7 @@ export interface TranslationContent {
   placeholder: string;
   send: string;
 }
-import Translations from './types';
+import type { TranslationContent } from './types';
 
 const Translations: Record<string, TranslationContent> = {
   en: {
