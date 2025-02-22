@@ -32,4 +32,7 @@ interface Translations {
   fr: TranslationContent;
 }
 
-export default Translations;
+export interface Translations {
+  en: TranslationContent;
+  fr: TranslationContent;
+}
