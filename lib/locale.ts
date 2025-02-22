@@ -1,3 +1,10 @@
+export interface TranslationContent {
+  title: string;
+  startChat: string;
+  userIdentifier: string;
+  placeholder: string;
+  send: string;
+}
 import Translations from './types';
 
 const locale: Translations = {
