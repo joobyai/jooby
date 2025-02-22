@@ -23,6 +23,7 @@ interface TranslationContent {
   jobTypeQuestion: string;
   experienceQuestion: string;
   availabilityQuestion: string;
+  finalMessage: string;
 }
 
 interface Translations {
