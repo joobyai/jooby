@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import localeData from "../lib/locale";
-import type { TranslationContent } from './types';
+//import type { TranslationContent } from './types';
+import type { TranslationContent } from "../lib/types";
 
 interface ChatMessage {
   role: "user" | "assistant" | "system";
