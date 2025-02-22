@@ -1,4 +1,4 @@
-import type { Translations, TranslationContent } from "./types";
+import type { Translations } from "./types"; 
 
 const localeData: Translations = {
   en: {
