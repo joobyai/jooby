@@ -20,6 +20,7 @@ const locale: Translations = {
     budgetQuestion: 'What is your budget?',
     countryQuestion: 'Which country are you located in?',
     emailQuestion: 'What is your email?',
+    phoneQuestion: 'What is your phone number?',
     skillsQuestion: 'What skills do you have?',
     footerDisclaimer:
       'Powered by Jooby AI – Respect your privacy and data security.',
