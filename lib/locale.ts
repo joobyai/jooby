@@ -49,7 +49,6 @@ const locale: Translations = {
     disclaimer: "Toutes les informations seront utilisées uniquement pour t'envoyer des opportunités adaptées.",
     budgetQuestion: "Es-tu ouvert(e) à une formation courte avant d’obtenir un emploi ?",  
     countryQuestion: "Dans quel pays es-tu situé(e) ?",
-    successMessage: "Merci pour tes informations ! Nous allons t’envoyer les offres directement par email, et nos partenaires pourront te contacter par téléphone ou SMS si tu le souhaites.",
     nameQuestion: "Pour commencer, comment t’appelles-tu ?",
     sectorQuestion: "Merci, {name} ! Dans quel domaine ou type de poste cherches-tu un emploi ?",
     jobTypeQuestion: "Tu préfères un emploi à distance ou en présentiel ?",
