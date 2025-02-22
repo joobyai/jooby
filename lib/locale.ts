@@ -47,6 +47,8 @@ const locale: Translations = {
     placeholder: "Écris ta réponse ici...",
     send: "Envoyer",
     disclaimer: "Toutes les informations seront utilisées uniquement pour t'envoyer des opportunités adaptées.",
+    budgetQuestion: "Es-tu ouvert(e) à une formation courte avant d’obtenir un emploi ?",  
+    countryQuestion: "Dans quel pays es-tu situé(e) ?",
     successMessage: "Merci pour tes informations ! Nous allons t’envoyer les offres directement par email, et nos partenaires pourront te contacter par téléphone ou SMS si tu le souhaites.",
     nameQuestion: "Pour commencer, comment t’appelles-tu ?",
     sectorQuestion: "Merci, {name} ! Dans quel domaine ou type de poste cherches-tu un emploi ?",
@@ -54,6 +56,7 @@ const locale: Translations = {
     experienceQuestion: "As-tu une expérience ou des compétences spécifiques que tu aimerais mettre en avant ?",
     availabilityQuestion: "Es-tu disponible immédiatement ou as-tu une date de début souhaitée ?",
     phoneQuestion: "Il y a actuellement plusieurs opportunités dans ce secteur. Pour t’envoyer les informations et offres adaptées, pourrais-tu me donner ton numéro de téléphone ?",
+    skillsQuestion: "Quelles compétences as-tu ?",
     emailQuestion: "Merci ! Et enfin, sur quelle **adresse email** puis-je t’envoyer les détails des opportunités disponibles ?",
     finalMessage: "Nous avons bien reçu tes informations. Nos partenaires vont t’envoyer les offres d’emploi par email et pourront aussi te contacter par téléphone ou SMS si tu le souhaites. Bonne chance dans ta recherche !",
     footerDisclaimer:
