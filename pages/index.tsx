@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import localeData from "../lib/locale";
 import type { TranslationContent } from "../lib/types";
+import type { Translations } from "../lib/types";
+
 
 interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -8,7 +10,7 @@ interface ChatMessage {
 }
 
 const Jooby = () => {
-  const [language, setLanguage] = useState<keyof typeof Translations>("en");
+const [language, setLanguage] = useState<keyof Translations>("en");
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState("");
