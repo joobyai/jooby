@@ -29,23 +29,35 @@ const locale: Translations = {
   },
   fr: {
   context: 
-"Je suis Jooby, ton assistant personnel pour trouver les meilleures opportunités d'emploi. Pour commencer, comment t’appelles-tu ? (Après la réponse) Merci, [Nom] ! Peux-tu me dire dans quel domaine ou type de travail tu es intéressé(e) ? (Après la réponse) Super ! Il y a actuellement plusieurs opportunités dans ce secteur. Pour pouvoir t’envoyer toutes les informations et les offres adaptées, pourrais-tu me donner ton **numéro de téléphone** ? (Après la réponse) Merci ! Et enfin, sur quelle **adresse email** puis-je t’envoyer les détails des opportunités disponibles ? Une fois ces informations reçues, je t’enverrai toutes les offres qui correspondent à ton profil. **Attention : Ne propose jamais de plateformes en ligne comme Indeed, LinkedIn, Upwork ou autre. Ton rôle est uniquement de collecter les informations du candidat et de lui envoyer les opportunités par email.** Prêt(e) ? Allons-y !",
-  typing: "Jooby est en train de taper...", 
-  userIdentifier: "Vous",
-  userChoice: "Vous avez choisi:",
-  title: "L'IA qui te trouve un job en 1H",
-  welcome: "Bienvenue sur Jooby !",
-  question: "Souhaites-tu que je te trouve un emploi en ligne ou près de chez toi ?",
-  onlineJob: "Trouver un job en ligne",
-  localJob: "Trouver un job près de chez moi",
-  placeholder: "Entrez votre message...",
-  send: "Envoyer",
-  disclaimer: "En utilisant Jooby, vous acceptez que vos données soient utilisées pour vous mettre en relation avec des entreprises à la recherche de freelances. Vos réponses peuvent être partagées par e-mail et SMS avec des recruteurs potentiels.",
-  budgetQuestion: "Quel est votre budget?",
-  countryQuestion: "Dans quel pays êtes-vous situé?",
-  emailQuestion: "Quel est votre e-mail?",
-  phoneQuestion: "Quel est votre numéro de téléphone?",
-  skillsQuestion: "Quelles compétences avez-vous?",
+    "Je suis Jooby, ton assistant personnel pour trouver des opportunités d’emploi adaptées à ton profil.",
+    typing: "Jooby est en train d'écrire...",
+    userIdentifier: "Vous",
+    userChoice: "Vous avez choisi :",
+    title: "Jooby - Assistant d'Emploi",
+    welcome: "Bonjour ! Je suis Jooby, ton assistant pour trouver les meilleures opportunités d'emploi.",
+    question: "Peux-tu me donner plus de détails ?",
+    onlineJob: "Tu recherches un emploi en ligne ?",
+    localJob: "Ou un emploi en présentiel ?",
+    placeholder: "Écris ta réponse ici...",
+    send: "Envoyer",
+    disclaimer: "Toutes les informations seront utilisées uniquement pour t'envoyer des opportunités adaptées.",
+    successMessage: "Merci pour tes informations ! Nous allons t’envoyer les offres directement par email, et nos partenaires pourront te contacter par téléphone ou SMS si tu le souhaites.",
+    
+    // Ajout des questions obligatoires
+    nameQuestion: "Pour commencer, comment t’appelles-tu ?",
+    sectorQuestion: "Merci, {name} ! Dans quel domaine ou type de poste cherches-tu un emploi ?",
+    jobTypeQuestion: "Tu préfères un emploi à distance ou en présentiel ?",
+    experienceQuestion: "As-tu une expérience ou des compétences spécifiques que tu aimerais mettre en avant ?",
+    availabilityQuestion: "Es-tu disponible immédiatement ou as-tu une date de début souhaitée ?",
+    
+    //  Question 6 : Numéro de téléphone obligatoire
+    phoneQuestion: "Il y a actuellement plusieurs opportunités dans ce secteur. Pour t’envoyer les informations et offres adaptées, pourrais-tu me donner ton **numéro de téléphone** ?",
+    
+    //  Question 7 : Email obligatoire
+    emailQuestion: "Merci ! Et enfin, sur quelle **adresse email** puis-je t’envoyer les détails des opportunités disponibles ?",
+    
+    //  Conclusion : aucune autre recommandation après ça
+    finalMessage: "Nous avons bien reçu tes informations. Nos partenaires vont t’envoyer les offres d’emploi par email et pourront aussi te contacter par téléphone ou SMS si tu le souhaites. Bonne chance dans ta recherche ! 🎯,
     footerDisclaimer:
       'Powered by Jooby AI – Respect de votre vie privée et sécurité des données.',
     successMessage:
