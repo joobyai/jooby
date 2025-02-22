@@ -1,61 +1,65 @@
 import React, { useState, useEffect } from "react";
-import Translations from "../lib/locale";
-import locale from "../lib/locale";
 
-interface ChatMessage {
-  role: "user" | "assistant" | "system";
-  content: string;
-}
-
-const Jooby = () => {
-  const [language, setLanguage] = useState<keyof typeof Translations>("en");
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+const IndexPage = () => {
+  const [chatContext, setChatContext] = useState(null);
+  const [extractedInfo, setExtractedInfo] = useState(null);
+  const [leadId, setLeadId] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const [typing, setTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (!chatContext) return;
+    setExtractedInfo(extractInfoFromChat(chatContext));
+  }, [chatContext]);
 
-  const t = locale[language as keyof typeof Translations];
+  useEffect(() => {
+    if (!extractedInfo) return;
+    setLeadId(generateLeadId(extractedInfo));
+  }, [extractedInfo]);
 
-  const handleLanguageChange = (lang: "fr" | "en") => {
-    setLanguage(lang);
+  useEffect(() => {
+    if (leadId) {
+      saveLeadToDatabase(leadId, extractedInfo);
+    }
+  }, [leadId]);
+
+  const extractInfoFromChat = (chat) => {
+    return { extracted: true };
   };
 
-  const setChatContext = async () => {
-    const chatContext = [{ role: "system", content: t.context }];
-    try {
-      const response = await fetch("/api/openai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversation: chatContext }),
-      });
-      const { message } = await response.json();
+  const generateLeadId = (info) => {
+    return "lead_" + Math.random().toString(36).substring(2, 9);
+  };
 
-      setChatMessages([{ role: "assistant", content: message.content }]);
-      setLoading(false);
+  const saveLeadToDatabase = async (id, info) => {
+    try {
+      const response = await fetch("/api/savedb", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...info }),
+      });
+      const data = await response.json();
+      console.log("Lead saved:", data);
     } catch (error) {
-      console.error("Error setting chat context:", error);
-      setLoading(false);
+      console.error("Error saving lead:", error);
     }
   };
 
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
-
-    const payloadChat: ChatMessage[] = [...chatMessages, { role: "user", content: userInput }];
-
     setChatMessages([...chatMessages, { role: "user", content: userInput }]);
     setUserInput("");
     setTyping(true);
-
     try {
       const response = await fetch("/api/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversation: payloadChat }),
+        body: JSON.stringify({ conversation: chatMessages }),
       });
       const { message } = await response.json();
-
       setChatMessages([...chatMessages, { role: "assistant", content: message.content }]);
     } catch (error) {
       console.error("Error fetching assistant response:", error);
@@ -63,76 +67,30 @@ const Jooby = () => {
     setTyping(false);
   };
 
-  useEffect(() => {
-    setChatMessages([]);
-    setLoading(true);
-    setChatContext();
-  }, [language, setChatContext]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center w-screen h-screen bg-gray-900 text-white">
-        <div className="animate-spin text-5xl font-bold">∞</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col w-screen h-screen bg-gray-900 text-white p-4 relative overflow-hidden">
-      <div className="absolute top-4 right-4 flex space-x-2 z-50">
-        <button
-          onClick={() => handleLanguageChange("fr")}
-          className={`px-4 py-2 rounded-md text-sm font-semibold ${language === "fr" ? "bg-green-600" : "bg-gray-700"}`}
-        >
-          FR
-        </button>
-        <button
-          onClick={() => handleLanguageChange("en")}
-          className={`px-4 py-2 rounded-md text-sm font-semibold ${language === "en" ? "bg-green-600" : "bg-gray-700"}`}
-        >
-          EN
-        </button>
-      </div>
-
-      <div className="flex flex-col items-center justify-center flex-grow">
-        <div className="text-5xl font-bold">∞</div>
-        <h1 className="text-2xl font-bold">Jooby</h1>
-        <div className="text-3xl font-semibold mt-4">{t.title}</div>
-      </div>
-
+    <div className="flex flex-col w-screen h-screen bg-gray-900 text-white p-4">
+      <h1 className="text-2xl font-bold">Bienvenue sur Jooby.ai</h1>
+      <p>Le contenu sera ici...</p>
+      <button onClick={() => setChatOpen(!chatOpen)} className="bg-blue-500 p-2 mt-4">Ouvrir Chat</button>
       {chatOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-80 z-50">
-          <div className="relative w-full max-w-4xl bg-gray-700 p-6 rounded-lg shadow-xl">
-            <button onClick={() => setChatOpen(false)} className="absolute top-2 right-2 text-white text-3xl">
-              &times;
-            </button>
-            <div className="overflow-y-auto max-h-96 w-full space-y-4 mb-4 p-4 bg-gray-800 rounded-md">
-              {chatMessages.map((msg, index) => (
-                <p key={index} className="text-white">
-                  <strong>{msg.role === "user" ? `${t.userIdentifier}:` : "Jooby:"}</strong> {msg.content}
-                </p>
-              ))}
-              {typing && <p className="text-gray-400">{t.typing}</p>}
-            </div>
-
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Écris ton message..."
-                className="w-full p-2 text-black rounded-md"
-              />
-              <button onClick={handleSendMessage} className="bg-green-600 px-4 py-2 rounded-md text-white font-semibold hover:bg-green-500">
-                Envoyer
-              </button>
-            </div>
-          </div>
+        <div className="chat-window">
+          {chatMessages.map((msg, index) => (
+            <p key={index} className={msg.role === "user" ? "text-blue-400" : "text-green-400"}>
+              <strong>{msg.role === "user" ? "Toi" : "Jooby"}:</strong> {msg.content}
+            </p>
+          ))}
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            className="p-2 bg-gray-700 text-white w-full mt-2"
+            placeholder="Écris ici..."
+          />
         </div>
       )}
     </div>
   );
 };
 
-export default Jooby;
+export default IndexPage;
