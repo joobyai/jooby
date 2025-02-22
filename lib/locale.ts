@@ -45,7 +45,7 @@ const locale: Translations = {
     budgetQuestion: 'Quel est votre budget?',
     countryQuestion: 'Dans quel pays êtes-vous situé?',
     emailQuestion: 'Quel est votre e-mail?',
-    skillsQuestion: 'Quelles compétences avez-vous?'
+    skillsQuestion: 'Quelles compétences avez-vous?',
     footerDisclaimer:
       'Powered by Jooby AI – Respect de votre vie privée et sécurité des données.',
     successMessage:
