@@ -14,6 +14,7 @@ interface TranslationContent {
   budgetQuestion: string;
   countryQuestion: string;
   emailQuestion: string;
+  phoneQuestion: string;
   skillsQuestion: string;
   footerDisclaimer: string;
   successMessage: string;
