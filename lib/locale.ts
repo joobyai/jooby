@@ -42,22 +42,14 @@ const locale: Translations = {
     send: "Envoyer",
     disclaimer: "Toutes les informations seront utilisées uniquement pour t'envoyer des opportunités adaptées.",
     successMessage: "Merci pour tes informations ! Nous allons t’envoyer les offres directement par email, et nos partenaires pourront te contacter par téléphone ou SMS si tu le souhaites.",
-    
-    // Ajout des questions obligatoires
     nameQuestion: "Pour commencer, comment t’appelles-tu ?",
     sectorQuestion: "Merci, {name} ! Dans quel domaine ou type de poste cherches-tu un emploi ?",
     jobTypeQuestion: "Tu préfères un emploi à distance ou en présentiel ?",
     experienceQuestion: "As-tu une expérience ou des compétences spécifiques que tu aimerais mettre en avant ?",
     availabilityQuestion: "Es-tu disponible immédiatement ou as-tu une date de début souhaitée ?",
-    
-    //  Question 6 : Numéro de téléphone obligatoire
     phoneQuestion: "Il y a actuellement plusieurs opportunités dans ce secteur. Pour t’envoyer les informations et offres adaptées, pourrais-tu me donner ton **numéro de téléphone** ?",
-    
-    //  Question 7 : Email obligatoire
     emailQuestion: "Merci ! Et enfin, sur quelle **adresse email** puis-je t’envoyer les détails des opportunités disponibles ?",
-    
-    //  Conclusion : aucune autre recommandation après ça
-    finalMessage: "Nous avons bien reçu tes informations. Nos partenaires vont t’envoyer les offres d’emploi par email et pourront aussi te contacter par téléphone ou SMS si tu le souhaites. Bonne chance dans ta recherche ! 🎯,
+    finalMessage: "Nous avons bien reçu tes informations. Nos partenaires vont t’envoyer les offres d’emploi par email et pourront aussi te contacter par téléphone ou SMS si tu le souhaites. Bonne chance dans ta recherche !",
     footerDisclaimer:
       'Powered by Jooby AI – Respect de votre vie privée et sécurité des données.',
     successMessage:
