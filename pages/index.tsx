@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import localeData from "../lib/locale";
 import type { TranslationContent } from './types';
 
 interface ChatMessage {
