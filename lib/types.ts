@@ -24,6 +24,7 @@ interface TranslationContent {
   experienceQuestion: string;
   availabilityQuestion: string;
   finalMessage: string;
+  startChat: string;
 }
 
 interface Translations {
