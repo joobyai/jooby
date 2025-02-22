@@ -27,7 +27,6 @@ export interface TranslationContent {
   startChat: string;
 }
 
-
 export interface Translations {
   en: TranslationContent;
   fr: TranslationContent;
