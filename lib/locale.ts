@@ -74,4 +74,4 @@ const Translations: Record<string, TranslationContent> = {
   },
 };
 
-export default locale;
+export default Translations;
