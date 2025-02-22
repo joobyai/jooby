@@ -27,6 +27,7 @@ const locale: Translations = {
     jobTypeQuestion: "Do you prefer a remote or on-site job?",
     experienceQuestion: "Do you have any relevant experience or skills?",
     availabilityQuestion: "When would you be available to start working?",
+    finalMessage: "Nous avons bien reçu tes informations. Nos partenaires vont t’envoyer les offres d’emploi par email et pourront aussi te contacter par téléphone ou SMS si tu le souhaites. Bonne chance dans ta recherche !",
     footerDisclaimer:
       'Powered by Jooby AI – Respect your privacy and data security.',
     successMessage:
