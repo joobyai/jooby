@@ -15,7 +15,7 @@ const Jooby = () => {
   const [extractedInfo, setExtractedInfo] = useState<Record<string, string>>({});
   const [leadId, setLeadId] = useState<string | null>(null);
 
-  const t: TranslationContent = locale[language];
+ const t: TranslationContent = localeData[language];
 
   const handleLanguageChange = (lang: "fr" | "en") => {
     setLanguage(lang);
