@@ -39,7 +39,7 @@ const locale: Translations = {
     typing: "Jooby est en train d'écrire...",
     userIdentifier: "Vous",
     userChoice: "Vous avez choisi :",
-    title: "Jooby - Assistant d'Emploi",
+    title: "L'IA qui te trouve un job en 1H",
     welcome: "Bonjour ! Je suis Jooby, ton assistant pour trouver les meilleures opportunités d'emploi.",
     question: "Peux-tu me donner plus de détails ?",
     onlineJob: "Tu recherches un emploi en ligne ?",
