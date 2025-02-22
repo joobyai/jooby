@@ -91,7 +91,7 @@ const Jooby = () => {
     .then(res => res.json())
     .then(data => setExtractedInfo(JSON.parse(data.message.content)))
     .catch(error => console.error("Error extracting information from conversation:", error));
-  }, [chatMessages]);
+  }, [chatMessages, extractedInfo]);
 
   return (
     <div className="flex flex-col w-screen h-screen bg-gray-900 text-white p-4 relative overflow-hidden">
