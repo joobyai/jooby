@@ -27,6 +27,7 @@ interface TranslationContent {
   startChat: string;
 }
 
+
 interface Translations {
   en: TranslationContent;
   fr: TranslationContent;
