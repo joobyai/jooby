@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Translations from "../lib/locale";
 import locale from "../lib/locale";
 
@@ -14,28 +14,24 @@ const Jooby = () => {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(false);
-  const [jobType, setJobType] = useState<"online" | "local" | null>(null);
   const [extractedInfo, setExtractedInfo] = useState<Record<string, string>>({});
-  const [canSaveToDb, setCanSaveToDb] = useState(false);
   const [isContextSet, setIsContextSet] = useState(false);
-  const [leadId, setLeadId] = useState<string | null>(null);
 
-  const t = locale[language as keyof typeof Translations];
+  const t = locale[language];
 
   const handleLanguageChange = (lang: "fr" | "en") => {
     setLanguage(lang);
   };
 
-  const setChatContext = async () => {
-    const chatContext = [{ role: "system", content: t.context }];
+  const setChatContext = useCallback(async () => {
     try {
       const response = await fetch("/api/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversation: chatContext }),
+        body: JSON.stringify({ conversation: [{ role: "system", content: t.context }] }),
       });
-      const { message } = await response.json();
 
+      const { message } = await response.json();
       setChatMessages([{ role: "assistant", content: message.content }]);
       setIsContextSet(true);
       setLoading(false);
@@ -44,10 +40,9 @@ const Jooby = () => {
       setIsContextSet(false);
       setLoading(false);
     }
-  };
+  }, [t.context]);
 
-  const startChat = (selectedJobType: "online" | "local") => {
-    setJobType(selectedJobType);
+  const startChat = () => {
     setChatOpen(true);
   };
 
@@ -55,8 +50,6 @@ const Jooby = () => {
     if (!userInput.trim()) return;
 
     let nextQuestion = "";
-
-    // Vérifier si le prospect a donné toutes les infos de base avant de demander email/téléphone
     const missingInfo = [];
     if (!extractedInfo.skills) missingInfo.push("tes compétences");
     if (!extractedInfo.current_profession) missingInfo.push("ton expérience ou ton poste actuel");
@@ -82,6 +75,7 @@ Ne t'inquiète pas, ces infos ne seront utilisées que pour t'envoyer ces offres
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversation: updatedChat }),
       });
+
       const { message } = await response.json();
       const botResponse = message.content + (nextQuestion ? `\n\n${nextQuestion}` : "");
 
@@ -93,7 +87,7 @@ Ne t'inquiète pas, ces infos ne seront utilisées que pour t'envoyer ces offres
     setTyping(false);
   };
 
-  const extractInfoFromChat = async () => {
+  const extractInfoFromChat = useCallback(async () => {
     if (chatMessages.length < 2) return;
 
     const payloadChat: ChatMessage[] = [
@@ -107,23 +101,24 @@ Ne t'inquiète pas, ces infos ne seront utilisées que pour t'envoyer ces offres
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversation: payloadChat }),
       });
+
       const { message } = await response.json();
       setExtractedInfo(JSON.parse(message.content));
     } catch (error) {
       console.error("Error extracting information from conversation:", error);
     }
-  };
+  }, [chatMessages]);
 
   useEffect(() => {
     setChatMessages([]);
     setIsContextSet(false);
     setLoading(true);
     setChatContext();
-  }, [language]);
+  }, [language, setChatContext]);
 
   useEffect(() => {
     extractInfoFromChat();
-  }, [chatMessages]);
+  }, [chatMessages, extractInfoFromChat]);
 
   if (loading || !isContextSet) {
     return (
@@ -154,11 +149,8 @@ Ne t'inquiète pas, ces infos ne seront utilisées que pour t'envoyer ces offres
         <div className="text-5xl font-bold">∞</div>
         <h1 className="text-2xl font-bold">Jooby</h1>
         <div className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-xl mt-6">
-          <button onClick={() => startChat("online")} className="w-full rounded-md bg-green-600 py-3 text-lg font-semibold text-white hover:bg-green-500 mt-4">
+          <button onClick={startChat} className="w-full rounded-md bg-green-600 py-3 text-lg font-semibold text-white hover:bg-green-500 mt-4">
             {t.onlineJob}
-          </button>
-          <button onClick={() => startChat("local")} className="w-full rounded-md bg-[#1e4f8f] py-2 text-sm font-light text-white hover:bg-[#17437a] mt-2">
-            {t.localJob}
           </button>
         </div>
       </div>
