@@ -14,8 +14,6 @@ const Jooby = () => {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [typing, setTyping] = useState(false);
-  const [extractedInfo, setExtractedInfo] = useState<Record<string, string>>({});
-  const [leadId, setLeadId] = useState<string | null>(null);
 
   const t = locale[language as keyof typeof Translations];
 
@@ -44,19 +42,6 @@ const Jooby = () => {
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
-    let nextQuestion = "";
-
-    const missingInfo = [];
-    if (!extractedInfo.skills) missingInfo.push("tes compétences");
-    if (!extractedInfo.current_profession) missingInfo.push("ton expérience ou ton poste actuel");
-    if (!extractedInfo.objective) missingInfo.push("le type de job que tu recherches");
-
-    if (missingInfo.length > 0) {
-      nextQuestion = `Merci ! Peux-tu me donner plus d'infos sur ${missingInfo.join(", ")} ?`;
-    } else if (!extractedInfo.email || !extractedInfo.phone) {
-      nextQuestion = `Parfait ! Pour recevoir les offres, peux-tu me donner ton **email** et ton **numéro de téléphone** ?`;
-    }
-
     const payloadChat: ChatMessage[] = [...chatMessages, { role: "user", content: userInput }];
 
     setChatMessages([...chatMessages, { role: "user", content: userInput }]);
@@ -71,9 +56,7 @@ const Jooby = () => {
       });
       const { message } = await response.json();
 
-      const botResponse = message.content + (nextQuestion ? `\n\n${nextQuestion}` : "");
-
-      setChatMessages([...chatMessages, { role: "assistant", content: botResponse }]);
+      setChatMessages([...chatMessages, { role: "assistant", content: message.content }]);
     } catch (error) {
       console.error("Error fetching assistant response:", error);
     }
@@ -84,17 +67,7 @@ const Jooby = () => {
     setChatMessages([]);
     setLoading(true);
     setChatContext();
-  }, [language]);
-
-  useEffect(() => {
-    if (leadId) {
-      fetch("/api/cookies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: leadId }),
-      }).catch((error) => console.error("Error saving data in cookies:", error));
-    }
-  }, [leadId]);
+  }, [language, setChatContext]);
 
   if (loading) {
     return (
@@ -106,7 +79,6 @@ const Jooby = () => {
 
   return (
     <div className="flex flex-col w-screen h-screen bg-gray-900 text-white p-4 relative overflow-hidden">
-      {/* Language Selector */}
       <div className="absolute top-4 right-4 flex space-x-2 z-50">
         <button
           onClick={() => handleLanguageChange("fr")}
@@ -122,14 +94,12 @@ const Jooby = () => {
         </button>
       </div>
 
-      {/* Main Content */}
       <div className="flex flex-col items-center justify-center flex-grow">
         <div className="text-5xl font-bold">∞</div>
         <h1 className="text-2xl font-bold">Jooby</h1>
         <div className="text-3xl font-semibold mt-4">{t.title}</div>
       </div>
 
-      {/* Chat Window */}
       {chatOpen && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-80 z-50">
           <div className="relative w-full max-w-4xl bg-gray-700 p-6 rounded-lg shadow-xl">
@@ -145,7 +115,6 @@ const Jooby = () => {
               {typing && <p className="text-gray-400">{t.typing}</p>}
             </div>
 
-            {/* Input + Send Button */}
             <div className="flex space-x-2">
               <input
                 type="text"
