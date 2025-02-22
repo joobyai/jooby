@@ -8,6 +8,7 @@ const locale: Translations = {
     userIdentifier: 'You',
     userChoice: 'You have chosen: ',
     title: 'The AI that finds you a job in 1 hour',
+    startChat: "Start Chat",
     welcome: 'Welcome to Jooby!',
     question:
       'Would you like me to find you an online job or one near your location?',
@@ -40,6 +41,7 @@ const locale: Translations = {
     userIdentifier: "Vous",
     userChoice: "Vous avez choisi :",
     title: "L'IA qui te trouve un job en 1H",
+    startChat: "Démarrer la discussion",
     welcome: "Bonjour ! Je suis Jooby, ton assistant pour trouver les meilleures opportunités d'emploi.",
     question: "Peux-tu me donner plus de détails ?",
     onlineJob: "Tu recherches un emploi en ligne ?",
