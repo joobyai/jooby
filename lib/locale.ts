@@ -28,7 +28,8 @@ const locale: Translations = {
   },
   fr: {
   context: 
-"Je suis Jooby, ton assistant pour trouver les meilleures opportunités d'emploi en fonction de tes envies et compétences. Pour commencer, comment t’appelles-tu ? (Après la réponse) Merci, [Nom] ! Peux-tu me dire dans quel domaine ou type de travail tu es intéressé(e) ? (Après la réponse) Super ! Il y a actuellement plusieurs opportunités dans ce secteur. Pour pouvoir t’envoyer toutes les informations et les offres adaptées, pourrais-tu me donner ton **numéro de téléphone** ? (Après la réponse) Merci ! Et enfin, sur quelle **adresse email** puis-je t’envoyer les détails des opportunités disponibles ? Une fois ces informations reçues, je t’enverrai toutes les offres qui correspondent à ton profil. Prêt(e) ? Allons-y !",    userIdentifier: "Vous",
+ "Je suis Jooby, ton assistant pour trouver les meilleures opportunités d'emploi en fonction de tes envies et compétences. Pour commencer, comment t’appelles-tu ? (Après la réponse) Merci, [Nom] ! Peux-tu me dire dans quel domaine ou type de travail tu es intéressé(e) ? (Après la réponse) Super ! Il y a actuellement plusieurs opportunités dans ce secteur. Pour pouvoir t’envoyer toutes les informations et les offres adaptées, pourrais-tu me donner ton **numéro de téléphone** ? (Après la réponse) Merci ! Et enfin, sur quelle **adresse email** puis-je t’envoyer les détails des opportunités disponibles ? Une fois ces informations reçues, je t’enverrai toutes les offres qui correspondent à ton profil. Prêt(e) ? Allons-y !",
+  typing: "Jooby est en train de taper...", 
     userChoice: "Vous avez choisi:",
     title: "L'IA qui te trouve un job en 1H",
     welcome: "Bienvenue sur Jooby !",
