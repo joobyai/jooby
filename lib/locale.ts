@@ -22,6 +22,11 @@ const locale: Translations = {
     emailQuestion: 'What is your email?',
     phoneQuestion: 'What is your phone number?',
     skillsQuestion: 'What skills do you have?',
+    nameQuestion: "To start, what’s your name?",
+    sectorQuestion: "Thanks, {name}! Which industry or job position are you looking for?",
+    jobTypeQuestion: "Do you prefer a remote or on-site job?",
+    experienceQuestion: "Do you have any relevant experience or skills?",
+    availabilityQuestion: "When would you be available to start working?",
     footerDisclaimer:
       'Powered by Jooby AI – Respect your privacy and data security.',
     successMessage:
