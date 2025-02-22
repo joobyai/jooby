@@ -43,7 +43,7 @@ const locale: Translations = {
   budgetQuestion: "Quel est votre budget?",
   countryQuestion: "Dans quel pays êtes-vous situé?",
   emailQuestion: "Quel est votre e-mail?",
-  phoneQuestion: "Quel est votre numéro de téléphone?", // ✅ Ajouté pour garantir que le bot pose bien la question !
+  phoneQuestion: "Quel est votre numéro de téléphone?",
   skillsQuestion: "Quelles compétences avez-vous?",
     footerDisclaimer:
       'Powered by Jooby AI – Respect de votre vie privée et sécurité des données.',
