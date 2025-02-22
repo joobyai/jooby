@@ -17,11 +17,12 @@ export default async function handler(
       const response_format = initialResponseFormat || "text";
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: conversation,
-        max_tokens: 100,
-        response_format: { type: response_format },
-      });
+  model: "gpt-4o",
+  messages: conversation,
+  max_tokens: 100,
+});
+      console.log("🔹 Réponse OpenAI:", JSON.stringify(response, null, 2));
+
       const message = response.choices[0].message;
 
       // Envoie la réponse à l'utilisateur
