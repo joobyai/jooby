@@ -47,7 +47,7 @@ const locale: Translations = {
     jobTypeQuestion: "Tu préfères un emploi à distance ou en présentiel ?",
     experienceQuestion: "As-tu une expérience ou des compétences spécifiques que tu aimerais mettre en avant ?",
     availabilityQuestion: "Es-tu disponible immédiatement ou as-tu une date de début souhaitée ?",
-    phoneQuestion: "Il y a actuellement plusieurs opportunités dans ce secteur. Pour t’envoyer les informations et offres adaptées, pourrais-tu me donner ton **numéro de téléphone** ?",
+    phoneQuestion: "Il y a actuellement plusieurs opportunités dans ce secteur. Pour t’envoyer les informations et offres adaptées, pourrais-tu me donner ton numéro de téléphone ?",
     emailQuestion: "Merci ! Et enfin, sur quelle **adresse email** puis-je t’envoyer les détails des opportunités disponibles ?",
     finalMessage: "Nous avons bien reçu tes informations. Nos partenaires vont t’envoyer les offres d’emploi par email et pourront aussi te contacter par téléphone ou SMS si tu le souhaites. Bonne chance dans ta recherche !",
     footerDisclaimer:
