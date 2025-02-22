@@ -1,4 +1,4 @@
-interface TranslationContent {
+export interface TranslationContent {
   context: string;
   typing: string;
   userIdentifier: string;
