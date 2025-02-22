@@ -1,10 +1,3 @@
-export interface TranslationContent {
-  title: string;
-  startChat: string;
-  userIdentifier: string;
-  placeholder: string;
-  send: string;
-}
 import type { Translations, TranslationContent } from "./types";
 
 const localeData: Translations = {
