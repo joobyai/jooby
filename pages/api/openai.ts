@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
 import localeData from "../../lib/locale"; // Import du fichier de traduction
+import type { Translations } from "../../lib/types"; // Vérifie que ce fichier existe et contient la définition correcte
 
 // Initialise OpenAI avec ta clé API
 const openai = new OpenAI({
@@ -10,17 +11,18 @@ const openai = new OpenAI({
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
-      const { conversation, response_format: initialResponseFormat, lang = "fr" } = req.body;
+      const { conversation, response_format: initialResponseFormat } = req.body;
+      const lang: keyof Translations = req.body.lang || "fr"; // ✅ Correction ici : plus de double déclaration
+
       const response_format = initialResponseFormat || "text";
 
       console.log("📨 Requête reçue avec conversation:", JSON.stringify(conversation, null, 2));
 
       // Récupération du contexte depuis /lib/locale.ts
-      const lang = (req.body.lang as keyof Translations) || "fr";
       const context = localeData[lang]?.context || "Je suis Jooby, ton assistant personnel pour trouver un emploi.";
 
       // Ajout du contexte en tant que message "system"
-      const messages = conversation && conversation.length > 0 ? conversation : [];
+      const messages = conversation && conversation.length > 0 ? [...conversation] : [];
       messages.unshift({ role: "system", content: context });
 
       // Ajouter un message de bienvenue si la conversation est vide
