@@ -40,9 +40,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Envoie la réponse à l'utilisateur
       res.status(200).json({ message });
 
-    } catch (error: any) {
-      console.error("🚨 Erreur OpenAI:", error);
-      res.status(500).json({ error: "Échec de la communication avec OpenAI", details: error.message });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("🚨 Erreur OpenAI:", error.message);
+        res.status(500).json({ error: "Échec de la communication avec OpenAI", details: error.message });
+      } else {
+        console.error("🚨 Erreur inconnue:", error);
+        res.status(500).json({ error: "Une erreur inconnue s'est produite" });
+      }
     }
   } else {
     res.status(405).json({ error: "Méthode non autorisée" });
