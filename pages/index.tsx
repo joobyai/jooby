@@ -3,16 +3,6 @@ import localeData from "../lib/locale";
 import type { TranslationContent } from "../lib/types";
 import type { Translations } from "../lib/types";
 
-const handleOpenChat = () => {
-  setChatOpen(true);
-  if (chatMessages.length === 0) {
-    setChatMessages([
-      { role: "assistant", content: "Bonjour et bienvenue chez Jooby ! 😊 Je suis là pour t’aider à trouver les meilleures opportunités adaptées à ton profil. Pour commencer, quel est ton prénom ?" }
-    ]);
-  }
-};
-
-
 interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
@@ -26,6 +16,15 @@ const [language, setLanguage] = useState<keyof Translations>("en");
   const [extractedInfo, setExtractedInfo] = useState<Record<string, string>>({});
   const [leadId, setLeadId] = useState<string | null>(null);
 
+  const handleOpenChat = () => {
+    setChatOpen(true);
+    if (chatMessages.length === 0) {
+      setChatMessages([
+        { role: "assistant", content: "Bonjour et bienvenue chez Jooby ! 😊 Je suis là pour t’aider à trouver les meilleures opportunités adaptées à ton profil. Pour commencer, quel est ton prénom ?" }
+      ]);
+    }
+  };
+  
  const t: TranslationContent = localeData[language];
 
   const handleLanguageChange = (lang: "fr" | "en") => {
