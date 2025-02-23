@@ -2,24 +2,11 @@ import React, { useState, useEffect } from "react";
 import localeData from "../lib/locale";
 import type { TranslationContent } from "../lib/types";
 import type { Translations } from "../lib/types";
-import { db } from "../lib/firebase"; 
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
 }
-
-const saveMessageToFirestore = async (message: ChatMessage) => {
-  try {
-    await addDoc(collection(db, "messages"), {
-      ...message,
-      timestamp: serverTimestamp(),
-    });
-  } catch (error) {
-    console.error("Error saving message to Firestore:", error);
-  }
-};
 
 const Jooby = () => {
 const [language, setLanguage] = useState<keyof Translations>("en");
@@ -45,30 +32,7 @@ const [language, setLanguage] = useState<keyof Translations>("en");
   };
 
   const handleSendMessage = async () => {
-  if (!userInput.trim()) return;
-
-  const userMessage: ChatMessage = { role: "user", content: userInput };
-  setChatMessages([...chatMessages, userMessage]);
-  setUserInput("");
-
-  saveMessageToFirestore(userMessage); // Sauvegarde le message utilisateur
-
-  try {
-    const response = await fetch("/api/openai", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversation: [...chatMessages, userMessage] }),
-    });
-
-    const { message } = await response.json();
-    const assistantMessage: ChatMessage = { role: "assistant", content: message.content };
-
-    setChatMessages((prev) => [...prev, assistantMessage]);
-    saveMessageToFirestore(assistantMessage); // Sauvegarde la réponse de l'assistant
-  } catch (error) {
-    console.error("Error fetching assistant response:", error);
-  }
-};
+    if (!userInput.trim()) return;
 
     const updatedChat: ChatMessage[] = [
       ...chatMessages,
