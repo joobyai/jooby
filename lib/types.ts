@@ -25,6 +25,7 @@ export interface TranslationContent {
   availabilityQuestion: string;
   finalMessage: string;
   startChat: string;
+  welcomeMessage: string;
 }
 
 export interface Translations {
