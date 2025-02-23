@@ -3,7 +3,7 @@ import OpenAI from "openai";
 
 // Initialise OpenAI avec ta clé API
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "", // Assure-toi que la clé API est bien dans .env.local
+  apiKey: process.env.OPENAI_API_KEY || "", // Vérifie que ta clé API est bien définie dans .env.local
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,22 +14,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("📨 Requête reçue avec conversation:", JSON.stringify(conversation, null, 2));
 
-      // Vérifie que la conversation contient bien un message initial
-      if (!conversation || conversation.length === 0) {
-        conversation.push({ role: "assistant", content: "Bienvenue ! Comment puis-je vous aider ?" });
-        console.log("✅ Message de bienvenue ajouté");
-      }
-
-      // Ajoute un contexte au bot (optionnel mais améliore la qualité des réponses)
-      const messages = [
-        { role: "system", content: "Tu es Jooby, un assistant intelligent et amical qui aide les utilisateurs." },
-        ...conversation,
+      // Vérifie qu'une conversation existe, sinon initialise avec un message de bienvenue
+      const messages = conversation && conversation.length > 0 ? conversation : [
+        { role: "assistant", content: "Bonjour ! Je suis Jooby, votre assistant virtuel. Comment puis-je vous aider aujourd'hui ?" }
       ];
+
+      // Ajout du contexte pour améliorer les réponses
+      messages.unshift({
+        role: "system",
+        content: `Tu es Jooby, un assistant virtuel intelligent et amical. 
+        Ton but est d'aider les utilisateurs avec des réponses claires, précises et utiles. 
+        Si quelqu'un te pose une question ambiguë, demande plus de précisions. 
+        Si quelqu'un parle d'emploi, adapte tes réponses en fonction de son profil et pose-lui des questions pour mieux l'aider.`
+      });
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages,
-        max_tokens: 100,
+        max_tokens: 200,
         response_format: { type: response_format },
       });
 
