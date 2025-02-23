@@ -18,35 +18,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("📨 Requête reçue avec conversation:", JSON.stringify(conversation, null, 2));
 
-      // Récupération du contexte avec consignes strictes
+      // Contexte pour forcer le bon déroulement du dialogue
       const context = `
         ${localeData[lang]?.context || "Je suis Jooby, ton assistant personnel pour trouver un emploi."}
 
-        **Important** : 
-        - Tu ne fais pas de recommandations d'emplois, tu poses des **questions étape par étape**.
-        - Tu ne donnes pas de conseils.
-        - Tu guides l'utilisateur **vers la collecte de ses informations** pour que nous puissions lui envoyer les offres.
-        - Ne saute **aucune étape** du script.
+        **Important** :
+        - Ne recommande pas d'emplois, ne donne pas de conseils.
+        - Pose **une question à la fois**.
+        - L'objectif est de **collecter les infos** pour envoyer les offres par GHL.
+        - **Respecte cet ordre :**
+          1️⃣ **Demander le prénom** de l’utilisateur.
+          2️⃣ **Localisation**.
+          3️⃣ **Langues parlées**.
+          4️⃣ **Statut professionnel**.
+          5️⃣ **Secteur d’activité et passions**.
+          6️⃣ **Formation courte possible**.
+          7️⃣ **Motivation sur une échelle de 1 à 10**.
+          8️⃣ **Récupération du téléphone et de l’email**.
 
-        **Déroulement du dialogue** :
-        1️⃣ Demande d’abord le **prénom** de l’utilisateur.
-        2️⃣ Demande sa **localisation**.
-        3️⃣ Vérifie s’il parle **plusieurs langues**.
-        4️⃣ Demande s’il est **en recherche active d’emploi**.
-        5️⃣ Demande ses **passions et secteur d’activité préféré**.
-        6️⃣ Vérifie s’il est **ouvert à une formation courte**.
-        7️⃣ Sur une échelle de **1 à 10**, demande sa motivation.
-        8️⃣ **Collecte le téléphone** et **l’email** pour envoyer les opportunités via GHL.
+        **Dès l’ouverture du chat, affiche ce message :**
+        "Bonjour et bienvenue chez Jooby ! 😊 Je suis là pour t’aider à trouver les meilleures opportunités adaptées à ton profil. Pour commencer, quel est ton prénom ?"
       `.trim();
 
-      // Construction des messages
       const messages = conversation && conversation.length > 0 ? [...conversation] : [];
-      messages.unshift({ role: "system", content: context });
 
-      // Ajouter un message d'accueil si la conversation est vide
-      if (messages.length === 1) {
-        messages.push({ role: "assistant", content: localeData[lang]?.nameQuestion || "Pour commencer, comment t’appelles-tu ?" });
+      // **FORCER LE MESSAGE DE BIENVENUE DÈS L’OUVERTURE**
+      if (messages.length === 0) {
+        messages.push({ role: "assistant", content: "Bonjour et bienvenue chez Jooby ! 😊 Je suis là pour t’aider à trouver les meilleures opportunités adaptées à ton profil. Pour commencer, quel est ton prénom ?" });
       }
+
+      messages.unshift({ role: "system", content: context });
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -66,6 +67,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(500).json({ error: "Échec de la communication avec OpenAI" });
     }
   } else {
-    res.status(405).json({ error: "Méthode non autorisée" });
+    res.status(405).json({ error: "Méthode non autorisée." });
   }
 }
