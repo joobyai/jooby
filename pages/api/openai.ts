@@ -7,6 +7,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "", // Assure-toi que la clé API est configurée dans .env.local
 });
 
+const { conversation } = req.body;
+
+// Ajouter un message de bienvenue si la conversation est vide
+if (!conversation || conversation.length === 0) {
+  conversation.push({ role: "assistant", content: "Bienvenue ! Comment puis-je vous aider ?" });
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
