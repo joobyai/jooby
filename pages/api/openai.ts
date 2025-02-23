@@ -13,7 +13,7 @@ export default async function handler(
 ) {
   if (req.method === "POST") {
     try {
-      const { conversation, response_format: initialResponseFormat } = req.body;
+      const { conversation } = req.body;
       const response_format = initialResponseFormat || "text";
 
       const response = await openai.chat.completions.create({
