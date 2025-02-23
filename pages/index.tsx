@@ -148,6 +148,10 @@ const Jooby = () => {
                 <p key={index} className="text-white"><strong>{msg.role === "user" ? `${t.userIdentifier}:` : "Jooby:"}</strong> {msg.content}</p>
               ))}
             </div>
+            <div className="flex mt-4">
+              <input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} placeholder="Écrivez votre message..." className="flex-grow p-2 rounded-md bg-gray-600 text-white" />
+              <button onClick={handleSendMessage} className="ml-2 px-4 py-2 bg-green-600 rounded-md">Envoyer</button>
+            </div>
           </div>
         </div>
       )}
