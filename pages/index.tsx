@@ -127,12 +127,9 @@ const [language, setLanguage] = useState<keyof Translations>("en");
       <div className="flex flex-col items-center justify-center flex-grow">
         <h1 className="text-2xl font-bold">Jooby</h1>
         <div className="text-3xl font-semibold mt-4">{t.title}</div>
-        <button
-          onClick={() => setChatOpen(true)}
-          className="mt-4 px-4 py-2 bg-green-600 rounded-md"
-        >
-          {t.startChat}
-        </button>
+        <button onClick={handleOpenChat} className="mt-4 px-4 py-2 bg-green-600 rounded-md">
+  {t.startChat}
+</button>
       </div>
       {chatOpen && (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-80 z-50">
