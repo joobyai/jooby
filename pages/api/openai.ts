@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import OpenAI from "openai";
-import localeData from "../../lib/local"; // Import du fichier de traduction
+import localeData from "../../lib/locale"; // Import du fichier de traduction
 
 // Initialise OpenAI avec ta clé API
 const openai = new OpenAI({
@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("📨 Requête reçue avec conversation:", JSON.stringify(conversation, null, 2));
 
-      // Récupération du contexte depuis /lib/local.ts
+      // Récupération du contexte depuis /lib/locale.ts
       const context = localeData[lang]?.context || "Je suis Jooby, ton assistant personnel pour trouver un emploi.";
 
       // Ajout du contexte en tant que message "system"
