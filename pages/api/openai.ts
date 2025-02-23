@@ -16,6 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log("📨 Requête reçue avec conversation:", JSON.stringify(conversation, null, 2));
 
       // Récupération du contexte depuis /lib/locale.ts
+      const lang = (req.body.lang as keyof Translations) || "fr";
       const context = localeData[lang]?.context || "Je suis Jooby, ton assistant personnel pour trouver un emploi.";
 
       // Ajout du contexte en tant que message "system"
