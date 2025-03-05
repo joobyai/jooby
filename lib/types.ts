@@ -1,4 +1,4 @@
-export interface TranslationContent {
+interface TranslationContent {
   context: string;
   typing: string;
   userIdentifier: string;
@@ -14,21 +14,14 @@ export interface TranslationContent {
   budgetQuestion: string;
   countryQuestion: string;
   emailQuestion: string;
-  phoneQuestion: string;
   skillsQuestion: string;
   footerDisclaimer: string;
   successMessage: string;
-  nameQuestion: string;
-  sectorQuestion: string;
-  jobTypeQuestion: string;
-  experienceQuestion: string;
-  availabilityQuestion: string;
-  finalMessage: string;
-  startChat: string;
-  welcomeMessage: string;
 }
 
-export interface Translations {
+interface Translations {
   en: TranslationContent;
   fr: TranslationContent;
 }
+
+export default Translations;
